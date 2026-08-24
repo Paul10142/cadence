@@ -1,5 +1,9 @@
 import AppKit
 
+// Carry over settings and history from the app's former name first, so the
+// defaults below don't overwrite anything the user already had.
+Migration.run()
+
 // Give the status item a sensible menu bar slot on first launch. Left to itself
 // macOS drops a brand-new item at the far left of the menu bar, which is exactly
 // where menu bar managers (Ice, Bartender) keep their hidden section -- so the

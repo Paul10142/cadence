@@ -29,7 +29,7 @@ final class Preferences {
         case displaySeconds, showTimerWindowAtLaunch, lastTimerMode
     }
 
-    static let didChange = Notification.Name("ThymeCustomPreferencesDidChange")
+    static let didChange = Notification.Name("CadencePreferencesDidChange")
 
     private let defaults = UserDefaults.standard
 
@@ -214,7 +214,7 @@ final class PreferencesWindowController: NSWindowController {
         let window = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 580, height: 330),
                               styleMask: [.titled, .closable, .miniaturizable],
                               backing: .buffered, defer: false)
-        window.title = "Thyme Custom Preferences"
+        window.title = "Cadence Preferences"
         window.isReleasedWhenClosed = false
         window.center()
         super.init(window: window)

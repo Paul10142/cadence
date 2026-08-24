@@ -31,7 +31,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private var blinkOn = true
 
     private lazy var stopwatchImage: NSImage = {
-        let base = NSImage(systemSymbolName: "stopwatch", accessibilityDescription: "Thyme Custom")
+        let base = NSImage(systemSymbolName: "stopwatch", accessibilityDescription: "Cadence")
             ?? NSImage(size: NSSize(width: 18, height: 18))
         // The default symbol size renders noticeably smaller than neighbouring
         // menu bar icons, so it gets nudged up to match them.
@@ -214,7 +214,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         menu.addItem(item("Preferences\u{2026}", #selector(showPreferences), enabled: true))
 
         menu.addItem(.separator())
-        menu.addItem(item("About Thyme Custom", #selector(about), enabled: true))
+        menu.addItem(item("About Cadence", #selector(about), enabled: true))
         menu.addItem(item("Quit", #selector(quit), enabled: true))
     }
 
@@ -443,7 +443,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private func postNotification(_ message: String) {
         guard Bundle.main.bundleIdentifier != nil else { return }
         let content = UNMutableNotificationContent()
-        content.title = "Thyme Custom"
+        content.title = "Cadence"
         content.body = message
         if Preferences.shared.alertNotificationSound { content.sound = .default }
         let request = UNNotificationRequest(identifier: UUID().uuidString,
@@ -473,7 +473,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
     @objc private func export() {
         let panel = NSSavePanel()
-        panel.nameFieldStringValue = "Thyme Sessions.csv"
+        panel.nameFieldStringValue = "Cadence Sessions.csv"
         panel.allowedContentTypes = [UTType.commaSeparatedText]
         panel.canCreateDirectories = true
         NSApp.activate(ignoringOtherApps: true)
@@ -557,11 +557,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             ? "\(list) is already in use"
             : "These shortcuts are already in use: \(list)"
         alert.informativeText = """
-            Another app on your Mac has already claimed it system-wide, so Thyme \
-            Custom can't respond to it. Quit the other app, or pick a different \
+            Another app on your Mac has already claimed it system-wide, so \
+            Cadence can't respond to it. Quit the other app, or pick a different \
             combination here.
-
-            If you still have the original Thyme running, that's the likely culprit.
             """
         alert.alertStyle = .warning
         alert.addButton(withTitle: "OK")

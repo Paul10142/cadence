@@ -1,23 +1,55 @@
 #!/bin/bash
-# Builds Thyme Custom.app and a distributable DMG.
+# Builds Cadence.app and a distributable DMG.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
-APP_NAME="Thyme Custom"
-BUNDLE_ID="com.paulclancy.ThymeCustom"
-VERSION="1.0.0"
+APP_NAME="Cadence"
+BUNDLE_ID="com.paulclancy.Cadence"
+VERSION="1.1.0"
 APP="build/${APP_NAME}.app"
 
-# The Command Line Tools on this Mac ship a stale duplicate module map; the
-# overlay hides it so AppKit can be imported. Harmless if the file is ever fixed.
-swiftc -O -target arm64-apple-macos13.0 \
-  -vfsoverlay build/vfs-overlay.yaml \
-  -o build/ThymeCustom Sources/*.swift
+mkdir -p build
+
+# Some Command Line Tools installs carry a stale duplicate of the SwiftBridging
+# module map, which makes importing AppKit fail. If this machine has it, hide the
+# stale copy behind a virtual filesystem overlay for the duration of the build.
+SWIFT_INC="/Library/Developer/CommandLineTools/usr/include/swift"
+OVERLAY_ARGS=()
+if [ -f "$SWIFT_INC/module.modulemap" ] && [ -f "$SWIFT_INC/bridging.modulemap" ]; then
+  echo "note: working around duplicate SwiftBridging module map"
+  : > build/empty.modulemap
+  cat > build/vfs-overlay.yaml <<YAML
+{
+  "version": 0,
+  "case-sensitive": false,
+  "roots": [
+    {
+      "type": "directory",
+      "name": "$SWIFT_INC",
+      "contents": [
+        { "type": "file", "name": "module.modulemap",
+          "external-contents": "$(pwd)/build/empty.modulemap" }
+      ]
+    }
+  ]
+}
+YAML
+  OVERLAY_ARGS=(-vfsoverlay build/vfs-overlay.yaml)
+fi
+
+swiftc -O -target arm64-apple-macos13.0 "${OVERLAY_ARGS[@]}" \
+  -o "build/${APP_NAME}" Sources/*.swift
+
+# App icon
+swiftc -target arm64-apple-macos13.0 "${OVERLAY_ARGS[@]}" \
+  -o build/makeicon Tools/makeicon.swift
+./build/makeicon "build/${APP_NAME}.iconset"
+iconutil -c icns "build/${APP_NAME}.iconset" -o "build/${APP_NAME}.icns"
 
 rm -rf "$APP"
 mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
-cp build/ThymeCustom "$APP/Contents/MacOS/ThymeCustom"
-cp build/ThymeCustom.icns "$APP/Contents/Resources/AppIcon.icns"
+cp "build/${APP_NAME}" "$APP/Contents/MacOS/${APP_NAME}"
+cp "build/${APP_NAME}.icns" "$APP/Contents/Resources/AppIcon.icns"
 
 cat > "$APP/Contents/Info.plist" <<PLIST
 <?xml version="1.0" encoding="UTF-8"?>
@@ -26,7 +58,7 @@ cat > "$APP/Contents/Info.plist" <<PLIST
 <dict>
     <key>CFBundleName</key><string>${APP_NAME}</string>
     <key>CFBundleDisplayName</key><string>${APP_NAME}</string>
-    <key>CFBundleExecutable</key><string>ThymeCustom</string>
+    <key>CFBundleExecutable</key><string>${APP_NAME}</string>
     <key>CFBundleIdentifier</key><string>${BUNDLE_ID}</string>
     <key>CFBundleIconFile</key><string>AppIcon</string>
     <key>CFBundlePackageType</key><string>APPL</string>
@@ -37,7 +69,7 @@ cat > "$APP/Contents/Info.plist" <<PLIST
     <key>LSUIElement</key><true/>
     <key>NSPrincipalClass</key><string>NSApplication</string>
     <key>NSHighResolutionCapable</key><true/>
-    <key>NSHumanReadableCopyright</key><string>A menu bar stopwatch, in the spirit of Thyme by João Moreno (MIT).</string>
+    <key>NSHumanReadableCopyright</key><string>A menu bar timer, in the spirit of Thyme by João Moreno (MIT).</string>
 </dict>
 </plist>
 PLIST

@@ -1,8 +1,8 @@
 <p align="center">
-  <img src="docs/icon.png" width="128" alt="Thyme Custom icon">
+  <img src="docs/icon.png" width="128" alt="Cadence icon">
 </p>
 
-<h1 align="center">Thyme Custom</h1>
+<h1 align="center">Cadence</h1>
 
 <p align="center">
   A tiny stopwatch, countdown and pomodoro timer that lives in your Mac's menu bar.<br>
@@ -10,7 +10,7 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/Paul10142/thyme-custom/releases/latest"><b>⬇ Download the latest release</b></a>
+  <a href="https://github.com/Paul10142/cadence/releases/latest"><b>⬇ Download the latest release</b></a>
 </p>
 
 ---
@@ -51,9 +51,9 @@ Mac sleeps or the screen is locked.
 
 ## Install
 
-1. Download `Thyme Custom.dmg` from the
-   [latest release](https://github.com/Paul10142/thyme-custom/releases/latest).
-2. Open it and drag **Thyme Custom** into your Applications folder.
+1. Download `Cadence.dmg` from the
+   [latest release](https://github.com/Paul10142/cadence/releases/latest).
+2. Open it and drag **Cadence** into your Applications folder.
 3. Open it. A stopwatch appears in your menu bar — there is no dock icon and no
    window, which is the point.
 
@@ -61,7 +61,7 @@ Mac sleeps or the screen is locked.
 
 Apple charges developers $99 a year for a certificate that tells macOS an app is
 trustworthy. This is a free app, there's no certificate behind it, and so macOS
-shows a scary and inaccurate message: *"Thyme Custom is damaged and can't be
+shows a scary and inaccurate message: *"Cadence is damaged and can't be
 opened"*.
 
 **There is no way around this without paying Apple.** Either you tell your Mac to
@@ -75,14 +75,14 @@ you or anyone you trust can read exactly what it does before running it.
 To open it anyway, paste this into Terminal once:
 
 ```bash
-xattr -dr com.apple.quarantine "/Applications/Thyme Custom.app"
+xattr -dr com.apple.quarantine "/Applications/Cadence.app"
 ```
 
 That removes the "downloaded from the internet" flag macOS attaches to the file.
 Then open the app normally. You only need to do this once.
 
 If you'd rather not use Terminal: go to **System Settings → Privacy & Security**,
-scroll down, and click **Open Anyway** next to the message about Thyme Custom.
+scroll down, and click **Open Anyway** next to the message about Cadence.
 
 > Only do this for software you actually trust — including this one.
 
@@ -100,15 +100,15 @@ scroll down, and click **Open Anyway** next to the message about Thyme Custom.
 In Preferences you can choose what a plain click does — open the menu, run the
 stopwatch, run the countdown, or run the pomodoro — and set system-wide keyboard
 shortcuts for each. Shortcuts work from any app. If another app has already
-claimed the combination you pick, Thyme Custom tells you rather than silently
+claimed the combination you pick, Cadence tells you rather than silently
 doing nothing.
 
-Your sessions live in `~/Library/Application Support/Thyme Custom/sessions.json`.
+Your sessions live in `~/Library/Application Support/Cadence/sessions.json`.
 
 ## Menu bar managers (Ice, Bartender)
 
 If you use a menu bar manager, new icons are usually dropped into its hidden
-section, where you'll never find them. Thyme Custom claims a visible position on
+section, where you'll never find them. Cadence claims a visible position on
 first launch to avoid this. If it still hides, drag it into the visible section
 in your manager's settings, or ⌘-drag it along the menu bar.
 
@@ -118,12 +118,12 @@ You need the Xcode Command Line Tools (`xcode-select --install`). Full Xcode is
 not required.
 
 ```bash
-git clone https://github.com/Paul10142/thyme-custom.git
-cd thyme-custom
+git clone https://github.com/Paul10142/cadence.git
+cd cadence
 ./Tools/bundle.sh
 ```
 
-This compiles the Swift sources, assembles `build/Thyme Custom.app`, signs it
+This compiles the Swift sources, assembles `build/Cadence.app`, signs it
 ad-hoc, and produces a DMG. Requires macOS 13 or later, Apple Silicon.
 
 ## Credits

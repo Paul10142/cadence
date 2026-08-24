@@ -59,6 +59,8 @@ enum TimeFormat {
 // MARK: - Session store
 
 final class SessionStore {
+    static let folderName = "Cadence"
+
     private(set) var sessions: [Session] = []
 
     private let fileURL: URL
@@ -66,7 +68,7 @@ final class SessionStore {
     init() {
         let base = FileManager.default
             .urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
-            .appendingPathComponent("Thyme Custom", isDirectory: true)
+            .appendingPathComponent(SessionStore.folderName, isDirectory: true)
         try? FileManager.default.createDirectory(at: base, withIntermediateDirectories: true)
         fileURL = base.appendingPathComponent("sessions.json")
         load()
