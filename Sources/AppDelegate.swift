@@ -86,8 +86,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         guard let button = statusItem.button else { return }
 
         if countdown.isActive {
-            button.image = nil
-            button.attributedTitle = title(countdownText(), dimmed: !blinkOn)
+            // A pomodoro shows its phase at a glance: a bar underneath while
+            // working, a bar on top during a break.
+            if countdown.config.cycling, countdown.state != .finished {
+                button.attributedTitle = NSAttributedString(string: "")
+                button.image = PhaseIndicator.image(countdownText(), barOnTop: countdown.phase == .rest)
+            } else {
+                button.image = nil
+                button.attributedTitle = title(countdownText(), dimmed: !blinkOn)
+            }
         } else if timer.state != .idle {
             button.image = nil
             button.attributedTitle = title(TimeFormat.clock(timer.elapsedSeconds))
@@ -181,9 +188,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
         menu.addItem(.separator())
         menu.addItem(item("Export\u{2026}", #selector(export), enabled: !store.sessions.isEmpty))
-        menu.addItem(item("Clear", #selector(clear), enabled: !store.sessions.isEmpty))
-
-        menu.addItem(.separator())
         menu.addItem(item("Preferences\u{2026}", #selector(showPreferences), enabled: true))
 
         menu.addItem(.separator())
@@ -196,7 +200,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         let item = NSMenuItem(title: text, action: nil, keyEquivalent: "")
         item.isEnabled = false
         item.attributedTitle = NSAttributedString(string: text, attributes: [
-            .font: NSFont.systemFont(ofSize: NSFont.smallSystemFontSize, weight: .semibold),
+            .font: NSFont.systemFont(ofSize: NSFont.menuFont(ofSize: 0).pointSize, weight: .semibold),
             .foregroundColor: NSColor.secondaryLabelColor,
         ])
         return item
@@ -206,9 +210,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         menu.addItem(.separator())
         menu.addItem(header("Timer"))
 
-        menu.addItem(item("Start General Timer\u{2026}", #selector(startGeneralTimer),
+        menu.addItem(item("Start General Timer", #selector(startGeneralTimer),
                           key: .startGeneralTimer, enabled: true))
-        menu.addItem(item("Start Pomodoro Timer\u{2026}", #selector(startPomodoroTimer),
+        menu.addItem(item("Start Pomodoro Timer", #selector(startPomodoroTimer),
                           key: .startPomodoroTimer, enabled: true))
 
         if countdown.isActive, let status = countdown.statusLine {
@@ -254,6 +258,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         let line = NSMenuItem(title: "Total: \(TimeFormat.clock(total))", action: nil, keyEquivalent: "")
         line.isEnabled = false
         menu.addItem(line)
+
+        // Clearing only makes sense next to the list it wipes.
+        menu.addItem(item("Clear", #selector(clear), enabled: true))
     }
 
     private func item(_ title: String, _ action: Selector,
