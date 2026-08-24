@@ -50,7 +50,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         // click is free to start and pause the stopwatch.
         statusItem.button?.target = self
         statusItem.button?.action = #selector(statusItemClicked)
-        statusItem.button?.sendAction(on: [.leftMouseUp, .rightMouseUp])
+        statusItem.button?.sendAction(on: [.leftMouseDown, .rightMouseDown])
 
         timer.onTick = { [weak self] in self?.refreshStatusItem() }
         countdown.onTick = { [weak self] in self?.refreshStatusItem() }
@@ -125,7 +125,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
     @objc private func statusItemClicked() {
         let event = NSApp.currentEvent
-        let wantsMenu = event?.type == .rightMouseUp
+        let wantsMenu = event?.type == .rightMouseDown
             || event?.modifierFlags.contains(.control) == true
 
         // Any click clears a finished timer that is blinking for attention.
@@ -150,13 +150,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     }
 
     private func showMenu() {
-        guard let button = statusItem.button else { return }
         rebuildMenu()
-        // popUp works from inside the button's own action handler;
-        // performClick does not, which made the first click a no-op.
-        menu.popUp(positioning: nil,
-                   at: NSPoint(x: 0, y: button.bounds.height + 4),
-                   in: button)
+        // Attaching the menu hands positioning to AppKit, which tucks it under
+        // the status item; positioning it by hand left a gap and a scroll arrow.
+        statusItem.menu = menu
+        statusItem.button?.performClick(nil)   // blocks until the menu closes
+        statusItem.menu = nil
     }
 
     // MARK: Menu
