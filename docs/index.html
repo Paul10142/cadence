@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Thyme Custom — a menu bar timer for macOS</title>
+<meta name="description" content="A tiny stopwatch, countdown and pomodoro timer that lives in your Mac's menu bar.">
+<style>
+  :root {
+    --bg: #ffffff; --fg: #16181d; --muted: #5c6370; --line: #e3e6ea;
+    --card: #f7f8fa; --accent: #2f6fd0; --accent-fg: #ffffff; --code-bg: #f0f2f5;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #14161a; --fg: #e8eaed; --muted: #9aa2ad; --line: #2a2e35;
+      --card: #1c1f25; --accent: #5b9bf5; --accent-fg: #0d1117; --code-bg: #21252b;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--fg);
+    font: 16px/1.65 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 680px; margin: 0 auto; padding: 64px 24px 96px; }
+  header { text-align: center; margin-bottom: 56px; }
+  header img { width: 104px; height: 104px; }
+  h1 { font-size: 2.4rem; margin: 20px 0 8px; letter-spacing: -0.02em; }
+  .tagline { color: var(--muted); font-size: 1.1rem; margin: 0 auto 28px; max-width: 30rem; }
+  .btn {
+    display: inline-block; background: var(--accent); color: var(--accent-fg);
+    padding: 13px 26px; border-radius: 10px; text-decoration: none; font-weight: 600;
+  }
+  .btn:hover { opacity: .9; }
+  .sub { color: var(--muted); font-size: .85rem; margin-top: 12px; }
+  h2 { font-size: 1.25rem; margin: 44px 0 12px; letter-spacing: -0.01em; }
+  p { margin: 0 0 16px; }
+  .card {
+    background: var(--card); border: 1px solid var(--line);
+    border-radius: 12px; padding: 20px 22px; margin: 0 0 16px;
+  }
+  .card h3 { margin: 0 0 6px; font-size: 1rem; }
+  .card p { margin: 0; color: var(--muted); font-size: .95rem; }
+  code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .875rem; }
+  pre {
+    background: var(--code-bg); border: 1px solid var(--line); border-radius: 10px;
+    padding: 14px 16px; overflow-x: auto;
+  }
+  a { color: var(--accent); }
+  ol { padding-left: 22px; }
+  li { margin-bottom: 8px; }
+  footer {
+    margin-top: 64px; padding-top: 24px; border-top: 1px solid var(--line);
+    color: var(--muted); font-size: .875rem; text-align: center;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <img src="icon.png" alt="Thyme Custom icon">
+    <h1>Thyme Custom</h1>
+    <p class="tagline">
+      A tiny stopwatch, countdown and pomodoro timer that lives in your Mac's
+      menu bar. No dock icon, no window, no account.
+    </p>
+    <a class="btn" href="https://github.com/Paul10142/thyme-custom/releases/latest">Download for macOS</a>
+    <p class="sub">Free and open source · Apple Silicon · macOS 13 or later</p>
+  </header>
+
+  <h2>What it does</h2>
+
+  <div class="card">
+    <h3>Stopwatch</h3>
+    <p>Click the icon and it starts counting up. Click again to pause. Finish
+       saves the time to your history and resets.</p>
+  </div>
+  <div class="card">
+    <h3>Countdown</h3>
+    <p>Set a duration and choose what happens at zero — blink in the menu bar,
+       an alert window, a notification, or a spoken announcement.</p>
+  </div>
+  <div class="card">
+    <h3>Pomodoro</h3>
+    <p>Work and break lengths over a set number of rounds, cycling
+       automatically. A rule under the time means you're working; a rule above
+       it means you're on a break.</p>
+  </div>
+  <div class="card">
+    <h3>History</h3>
+    <p>Every session is listed with a marker showing which timer produced it,
+       a running total, and a CSV export.</p>
+  </div>
+
+  <h2>Installing</h2>
+  <ol>
+    <li>Download the DMG, open it, and drag <b>Thyme Custom</b> into Applications.</li>
+    <li>Open it. A stopwatch appears in your menu bar — there's no window and no
+        dock icon, which is the whole idea.</li>
+  </ol>
+
+  <h2>If macOS says it's damaged</h2>
+  <p>
+    It isn't. This app isn't signed with a paid Apple Developer certificate, and
+    macOS is wary of anything downloaded without one. Paste this into Terminal
+    once:
+  </p>
+  <pre>xattr -dr com.apple.quarantine "/Applications/Thyme Custom.app"</pre>
+  <p>
+    That clears the "downloaded from the internet" flag. Then open it normally.
+    Alternatively, go to <b>System Settings → Privacy &amp; Security</b> and click
+    <b>Open Anyway</b>.
+  </p>
+  <p>
+    Only do this for software you trust. The complete source is on GitHub, and
+    you can build it yourself instead.
+  </p>
+
+  <h2>Where it came from</h2>
+  <p>
+    <a href="https://github.com/joaomoreno/thyme">Thyme</a> by João Moreno was a
+    lovely menu bar stopwatch, last updated in 2015 and no longer able to run on
+    Apple Silicon Macs. This is an independent rewrite in Swift with a countdown
+    and pomodoro added. It imports your old Thyme history automatically.
+  </p>
+
+  <footer>
+    <a href="https://github.com/Paul10142/thyme-custom">Source on GitHub</a> · MIT licensed
+  </footer>
+
+</div>
+</body>
+</html>

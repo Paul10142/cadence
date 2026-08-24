@@ -1,0 +1,5 @@
+# Build output
+build/
+
+# Machine-specific notes
+CLT-FIX.md
