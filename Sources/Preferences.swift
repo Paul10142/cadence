@@ -209,8 +209,8 @@ final class PreferencesWindowController: NSWindowController {
             ("Start / Pause:", .startPause),
             ("Restart:", .restart),
             ("Finish:", .finish),
-            ("Start General Timer:", .startGeneralTimer),
-            ("Start Pomodoro Timer:", .startPomodoroTimer),
+            ("Start / Stop General Timer:", .startGeneralTimer),
+            ("Start / Stop Pomodoro Timer:", .startPomodoroTimer),
         ]
 
         let grid = NSGridView(numberOfColumns: 2, rows: 0)

@@ -170,7 +170,11 @@ final class TimerSettingsWindowController: NSWindowController, NSWindowDelegate 
         modePicker.target = self
         modePicker.action = #selector(modeChanged)
         modePicker.selectedSegment = 0
-        let pickerRow = NSStackView(views: [NSView(), modePicker])
+        modePicker.controlSize = .large
+        modePicker.segmentDistribution = .fillEqually
+        modePicker.setWidth(110, forSegment: 0)
+        modePicker.setWidth(110, forSegment: 1)
+        let pickerRow = NSStackView(views: [NSView(), modePicker, NSView()])
         pickerRow.distribution = .fill
 
         for (field, stepper, cap) in [(workField, workStep, 600.0), (breakField, breakStep, 600.0),

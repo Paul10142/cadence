@@ -143,9 +143,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     }
 
     private func showMenu() {
-        statusItem.menu = menu
-        statusItem.button?.performClick(nil)   // blocks until the menu closes
-        statusItem.menu = nil
+        guard let button = statusItem.button else { return }
+        rebuildMenu()
+        // popUp works from inside the button's own action handler;
+        // performClick does not, which made the first click a no-op.
+        menu.popUp(positioning: nil,
+                   at: NSPoint(x: 0, y: button.bounds.height + 4),
+                   in: button)
     }
 
     // MARK: Menu
@@ -157,7 +161,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             timer.pause()
             pausedBySystem = false
         }
-        rebuildMenu()
     }
 
     func menuDidClose(_ menu: NSMenu) { menuIsOpen = false }
@@ -230,39 +233,27 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         guard !store.sessions.isEmpty else { return }
         menu.addItem(.separator())
 
-        let shown = showAllSessions ? store.sessions : store.recent(3)
-        for session in shown {
-            let entry = NSMenuItem(title: TimeFormat.menuLine(session), action: nil, keyEquivalent: "")
-            entry.isEnabled = false
-            // A stopwatch or hourglass glyph shows which kind of session it was.
-            if let icon = NSImage(systemSymbolName: session.kind.symbolName,
-                                  accessibilityDescription: session.kind.label) {
-                let config = NSImage.SymbolConfiguration(pointSize: 11, weight: .regular)
-                let sized = icon.withSymbolConfiguration(config) ?? icon
-                sized.isTemplate = true
-                entry.image = sized
-            }
-            menu.addItem(entry)
+        let count = store.sessions.count
+        let title = showAllSessions ? "Hide Sessions" : "Show All Sessions (\(count))"
+        // A custom view, so clicking it does not dismiss the menu.
+        let toggle = NSMenuItem()
+        toggle.view = MenuToggleItemView(title: title) { [weak self] in
+            self?.toggleSessionList()
         }
+        menu.addItem(toggle)
 
-        if store.sessions.count > 3 {
-            let title = showAllSessions
-                ? "Show Fewer Sessions"
-                : "Show All Sessions (\(store.sessions.count))"
-            // A custom view so the menu stays open when it is clicked.
-            let toggle = NSMenuItem()
-            toggle.view = MenuToggleItemView(title: title) { [weak self] in
-                self?.toggleSessionList()
-            }
-            menu.addItem(toggle)
-        }
+        guard showAllSessions else { return }
 
-        if showAllSessions {
-            let total = store.sessions.reduce(0) { $0 + $1.seconds }
-            let line = NSMenuItem(title: "Total: \(TimeFormat.clock(total))", action: nil, keyEquivalent: "")
-            line.isEnabled = false
-            menu.addItem(line)
-        }
+        // The whole list lives in one menu item, so expanding it never reflows
+        // the items below.
+        let list = NSMenuItem()
+        list.view = SessionsMenuView(sessions: store.sessions)
+        menu.addItem(list)
+
+        let total = store.sessions.reduce(0) { $0 + $1.seconds }
+        let line = NSMenuItem(title: "Total: \(TimeFormat.clock(total))", action: nil, keyEquivalent: "")
+        line.isEnabled = false
+        menu.addItem(line)
     }
 
     private func item(_ title: String, _ action: Selector,
@@ -311,8 +302,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     @objc private func startGeneralTimer() { TimerSettingsWindowController.shared.show(mode: .general) }
     @objc private func startPomodoroTimer() { TimerSettingsWindowController.shared.show(mode: .pomodoro) }
 
-    /// Keyboard shortcuts skip the settings window and run with what is saved.
-    private func startTimerImmediately(pomodoro: Bool) {
+    /// Keyboard shortcuts skip the settings window: they start the timer with
+    /// whatever is saved, and stop it if one is already running.
+    private func toggleTimer(pomodoro: Bool) {
+        if countdown.isActive {
+            stopTimer()
+            return
+        }
         var config = Preferences.shared.timerConfig
         config.cycling = pomodoro
         countdown.start(config: config)
@@ -479,8 +475,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             (.startPause, { [weak self] in self?.toggleStartPause() }),
             (.restart,    { [weak self] in self?.restart() }),
             (.finish,     { [weak self] in self?.finish() }),
-            (.startGeneralTimer,  { [weak self] in self?.startTimerImmediately(pomodoro: false) }),
-            (.startPomodoroTimer, { [weak self] in self?.startTimerImmediately(pomodoro: true) }),
+            (.startGeneralTimer,  { [weak self] in self?.toggleTimer(pomodoro: false) }),
+            (.startPomodoroTimer, { [weak self] in self?.toggleTimer(pomodoro: true) }),
         ]
         var taken: [String] = []
         for (key, action) in bindings {
