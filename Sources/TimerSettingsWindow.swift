@@ -52,15 +52,23 @@ final class TimerSettingsWindowController: NSWindowController, NSWindowDelegate 
 
     // MARK: Layout
 
+    /// One settings row: label, value box, stepper, unit.
+    ///
+    /// The value box is centred on the row itself, and the two flanks are given
+    /// the same fixed width, so the box lands on the exact centre line of the
+    /// window rather than wherever the surrounding text happens to push it.
+    private static let flankWidth: CGFloat = 74
+    private static let boxWidth: CGFloat = 60
+
     private func row(_ caption: String, _ field: NSTextField, _ stepper: NSStepper,
-                     _ suffix: String, range: ClosedRange<Int>) -> NSStackView {
+                     _ suffix: String, range: ClosedRange<Int>) -> NSView {
+        let container = NSView()
+
         let label = NSTextField(labelWithString: caption)
         label.alignment = .right
-        label.widthAnchor.constraint(equalToConstant: 66).isActive = true
 
         field.alignment = .center
         field.font = .monospacedDigitSystemFont(ofSize: NSFont.systemFontSize, weight: .regular)
-        field.widthAnchor.constraint(equalToConstant: 52).isActive = true
         field.target = self
         field.action = #selector(fieldChanged(_:))
 
@@ -73,10 +81,41 @@ final class TimerSettingsWindowController: NSWindowController, NSWindowDelegate 
         let unit = NSTextField(labelWithString: suffix)
         unit.textColor = .secondaryLabelColor
 
-        let stack = NSStackView(views: [label, field, stepper, unit])
-        stack.spacing = 6
-        stack.alignment = .centerY
-        return stack
+        let flank = NSView()   // holds the stepper and unit, mirroring the label's width
+
+        for view in [label, field, stepper, unit, flank] {
+            view.translatesAutoresizingMaskIntoConstraints = false
+        }
+        flank.addSubview(stepper)
+        flank.addSubview(unit)
+        container.addSubview(label)
+        container.addSubview(field)
+        container.addSubview(flank)
+
+        NSLayoutConstraint.activate([
+            field.centerXAnchor.constraint(equalTo: container.centerXAnchor),
+            field.widthAnchor.constraint(equalToConstant: Self.boxWidth),
+            field.topAnchor.constraint(equalTo: container.topAnchor),
+            field.bottomAnchor.constraint(equalTo: container.bottomAnchor),
+
+            label.widthAnchor.constraint(equalToConstant: Self.flankWidth),
+            label.trailingAnchor.constraint(equalTo: field.leadingAnchor, constant: -8),
+            label.centerYAnchor.constraint(equalTo: field.centerYAnchor),
+            label.leadingAnchor.constraint(greaterThanOrEqualTo: container.leadingAnchor),
+
+            flank.widthAnchor.constraint(equalToConstant: Self.flankWidth),
+            flank.leadingAnchor.constraint(equalTo: field.trailingAnchor, constant: 8),
+            flank.centerYAnchor.constraint(equalTo: field.centerYAnchor),
+            flank.heightAnchor.constraint(equalTo: stepper.heightAnchor),
+            flank.trailingAnchor.constraint(lessThanOrEqualTo: container.trailingAnchor),
+
+            stepper.leadingAnchor.constraint(equalTo: flank.leadingAnchor),
+            stepper.centerYAnchor.constraint(equalTo: flank.centerYAnchor),
+            unit.leadingAnchor.constraint(equalTo: stepper.trailingAnchor, constant: 6),
+            unit.centerYAnchor.constraint(equalTo: flank.centerYAnchor),
+            unit.trailingAnchor.constraint(lessThanOrEqualTo: flank.trailingAnchor),
+        ])
+        return container
     }
 
     private func buildContent() {
@@ -111,8 +150,8 @@ final class TimerSettingsWindowController: NSWindowController, NSWindowDelegate 
             row("Seconds:", secondsField, secondsStep, "", range: 0...59),
         ])
         pomodoroRows = NSStackView(views: [
-            row("Work:", workField, workStep, "minutes", range: 1...600),
-            row("Break:", breakField, breakStep, "minutes", range: 1...600),
+            row("Work:", workField, workStep, "min", range: 1...600),
+            row("Break:", breakField, breakStep, "min", range: 1...600),
             row("Rounds:", roundsField, roundsStep, "\u{00D7}", range: 1...99),
         ])
         for rows in [countdownRows!, pomodoroRows!] {
@@ -169,7 +208,7 @@ final class TimerSettingsWindowController: NSWindowController, NSWindowDelegate 
             stack.trailingAnchor.constraint(equalTo: content.trailingAnchor, constant: -pad),
             stack.bottomAnchor.constraint(equalTo: content.bottomAnchor, constant: -pad),
         ])
-        for row in [pickerRow, announcement, buttons] as [NSView] {
+        for row in [pickerRow, announcement, buttons, countdownRows!, pomodoroRows!] as [NSView] {
             NSLayoutConstraint.activate([
                 row.leadingAnchor.constraint(equalTo: content.leadingAnchor, constant: pad),
                 row.trailingAnchor.constraint(equalTo: content.trailingAnchor, constant: -pad),
@@ -178,6 +217,14 @@ final class TimerSettingsWindowController: NSWindowController, NSWindowDelegate 
         // Centred against the window, not against a stack whose own width is
         // itself decided by the solver.
         modePicker.centerXAnchor.constraint(equalTo: content.centerXAnchor).isActive = true
+
+        // Each settings row fills its stack, which now spans the window, so a
+        // row's centre line and the window's centre line are the same line.
+        for rows in [countdownRows!, pomodoroRows!] {
+            for row in rows.arrangedSubviews {
+                row.widthAnchor.constraint(equalTo: rows.widthAnchor).isActive = true
+            }
+        }
         window.contentView = content
         contentWidth = measureWidestMode(in: content)
         applyMode()
