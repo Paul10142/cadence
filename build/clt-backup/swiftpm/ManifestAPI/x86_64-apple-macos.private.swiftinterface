@@ -1,0 +1,765 @@
+// swift-interface-format-version: 1.0
+// swift-compiler-version: Apple Swift version 5.10 (swiftlang-5.10.0.13 clang-1500.3.9.4)
+// swift-module-flags: -target x86_64-apple-macos13.0 -enable-objc-interop -enable-library-evolution -swift-version 5 -enforce-exclusivity=checked -O -package-description-version 999.0 -user-module-version 22656 -module-name PackageDescription
+import Swift
+public struct BuildConfiguration {
+  public static let debug: PackageDescription.BuildConfiguration
+  public static let release: PackageDescription.BuildConfiguration
+}
+public struct BuildSettingCondition {
+  @available(_PackageDescription, deprecated: 5.7)
+  public static func when(platforms: [PackageDescription.Platform]? = nil, configuration: PackageDescription.BuildConfiguration? = nil) -> PackageDescription.BuildSettingCondition
+  @available(_PackageDescription 5.7)
+  public static func when(platforms: [PackageDescription.Platform], configuration: PackageDescription.BuildConfiguration) -> PackageDescription.BuildSettingCondition
+  @available(_PackageDescription 5.7)
+  public static func when(platforms: [PackageDescription.Platform]) -> PackageDescription.BuildSettingCondition
+  @available(_PackageDescription 5.7)
+  public static func when(configuration: PackageDescription.BuildConfiguration) -> PackageDescription.BuildSettingCondition
+}
+public struct CSetting {
+  @available(_PackageDescription 5.0)
+  public static func headerSearchPath(_ path: Swift.String, _ condition: PackageDescription.BuildSettingCondition? = nil) -> PackageDescription.CSetting
+  @available(_PackageDescription 5.0)
+  public static func define(_ name: Swift.String, to value: Swift.String? = nil, _ condition: PackageDescription.BuildSettingCondition? = nil) -> PackageDescription.CSetting
+  @available(_PackageDescription 5.0)
+  public static func unsafeFlags(_ flags: [Swift.String], _ condition: PackageDescription.BuildSettingCondition? = nil) -> PackageDescription.CSetting
+}
+public struct CXXSetting {
+  @available(_PackageDescription 5.0)
+  public static func headerSearchPath(_ path: Swift.String, _ condition: PackageDescription.BuildSettingCondition? = nil) -> PackageDescription.CXXSetting
+  @available(_PackageDescription 5.0)
+  public static func define(_ name: Swift.String, to value: Swift.String? = nil, _ condition: PackageDescription.BuildSettingCondition? = nil) -> PackageDescription.CXXSetting
+  @available(_PackageDescription 5.0)
+  public static func unsafeFlags(_ flags: [Swift.String], _ condition: PackageDescription.BuildSettingCondition? = nil) -> PackageDescription.CXXSetting
+}
+public struct SwiftSetting {
+  @available(_PackageDescription 5.0)
+  public static func define(_ name: Swift.String, _ condition: PackageDescription.BuildSettingCondition? = nil) -> PackageDescription.SwiftSetting
+  @available(_PackageDescription 5.0)
+  public static func unsafeFlags(_ flags: [Swift.String], _ condition: PackageDescription.BuildSettingCondition? = nil) -> PackageDescription.SwiftSetting
+  @available(_PackageDescription 5.8)
+  public static func enableUpcomingFeature(_ name: Swift.String, _ condition: PackageDescription.BuildSettingCondition? = nil) -> PackageDescription.SwiftSetting
+  @available(_PackageDescription 5.8)
+  public static func enableExperimentalFeature(_ name: Swift.String, _ condition: PackageDescription.BuildSettingCondition? = nil) -> PackageDescription.SwiftSetting
+  public enum InteroperabilityMode : Swift.String {
+    case C
+    case Cxx
+    public init?(rawValue: Swift.String)
+    public typealias RawValue = Swift.String
+    public var rawValue: Swift.String {
+      get
+    }
+  }
+  @available(_PackageDescription 5.9)
+  public static func interoperabilityMode(_ mode: PackageDescription.SwiftSetting.InteroperabilityMode, _ condition: PackageDescription.BuildSettingCondition? = nil) -> PackageDescription.SwiftSetting
+}
+public struct LinkerSetting {
+  @available(_PackageDescription 5.0)
+  public static func linkedLibrary(_ library: Swift.String, _ condition: PackageDescription.BuildSettingCondition? = nil) -> PackageDescription.LinkerSetting
+  @available(_PackageDescription 5.0)
+  public static func linkedFramework(_ framework: Swift.String, _ condition: PackageDescription.BuildSettingCondition? = nil) -> PackageDescription.LinkerSetting
+  @available(_PackageDescription 5.0)
+  public static func unsafeFlags(_ flags: [Swift.String], _ condition: PackageDescription.BuildSettingCondition? = nil) -> PackageDescription.LinkerSetting
+}
+@available(_PackageDescription 5.6)
+public struct Context {
+  public static var packageDirectory: Swift.String {
+    get
+  }
+  public static var environment: [Swift.String : Swift.String] {
+    get
+  }
+}
+public enum CLanguageStandard : Swift.String {
+  case c89
+  case c90
+  case c99
+  case c11
+  @available(_PackageDescription 5.4)
+  case c17
+  @available(_PackageDescription 5.4)
+  case c18
+  @available(_PackageDescription 5.4)
+  case c2x
+  case gnu89
+  case gnu90
+  case gnu99
+  case gnu11
+  @available(_PackageDescription 5.4)
+  case gnu17
+  @available(_PackageDescription 5.4)
+  case gnu18
+  @available(_PackageDescription 5.4)
+  case gnu2x
+  case iso9899_1990
+  case iso9899_199409
+  case iso9899_1999
+  case iso9899_2011
+  @available(_PackageDescription 5.4)
+  case iso9899_2017
+  @available(_PackageDescription 5.4)
+  case iso9899_2018
+  public init?(rawValue: Swift.String)
+  public typealias RawValue = Swift.String
+  public var rawValue: Swift.String {
+    get
+  }
+}
+public enum CXXLanguageStandard : Swift.String {
+  case cxx98
+  case cxx03
+  case cxx11
+  case cxx14
+  @available(_PackageDescription 5.4)
+  case cxx17
+  @available(_PackageDescription, introduced: 4, deprecated: 5.4, renamed: "cxx17")
+  case cxx1z
+  @available(_PackageDescription 5.4)
+  case cxx20
+  @available(_PackageDescription 5.6)
+  case cxx2b
+  case gnucxx98
+  case gnucxx03
+  case gnucxx11
+  case gnucxx14
+  @available(_PackageDescription 5.4)
+  case gnucxx17
+  @available(_PackageDescription, introduced: 4, deprecated: 5.4, renamed: "gnucxx17")
+  case gnucxx1z
+  @available(_PackageDescription 5.4)
+  case gnucxx20
+  @available(_PackageDescription 5.6)
+  case gnucxx2b
+  public init?(rawValue: Swift.String)
+  public typealias RawValue = Swift.String
+  public var rawValue: Swift.String {
+    get
+  }
+}
+public enum SwiftVersion {
+  @available(_PackageDescription, introduced: 4, obsoleted: 5)
+  case v3
+  @available(_PackageDescription 4)
+  case v4
+  @available(_PackageDescription 4)
+  case v4_2
+  @available(_PackageDescription 5)
+  case v5
+  case version(Swift.String)
+}
+extension PackageDescription.Package {
+  @_hasMissingDesignatedInitializers public class Dependency {
+    @available(_PackageDescription 5.6)
+    public enum Kind {
+      case fileSystem(name: Swift.String?, path: Swift.String)
+      case sourceControl(name: Swift.String?, location: Swift.String, requirement: PackageDescription.Package.Dependency.SourceControlRequirement)
+      case registry(id: Swift.String, requirement: PackageDescription.Package.Dependency.RegistryRequirement)
+    }
+    @available(_PackageDescription 5.6)
+    final public let kind: PackageDescription.Package.Dependency.Kind
+    @available(_PackageDescription, deprecated: 5.6, message: "use kind instead")
+    public var name: Swift.String? {
+      get
+    }
+    @available(_PackageDescription, deprecated: 5.6, message: "use kind instead")
+    public var url: Swift.String? {
+      get
+    }
+    @available(_PackageDescription, deprecated: 5.6, message: "use kind instead")
+    public var requirement: PackageDescription.Package.Dependency.Requirement {
+      get
+    }
+    @objc deinit
+  }
+}
+extension PackageDescription.Package.Dependency {
+  public static func package(path: Swift.String) -> PackageDescription.Package.Dependency
+  @available(_PackageDescription 5.2)
+  public static func package(name: Swift.String, path: Swift.String) -> PackageDescription.Package.Dependency
+}
+extension PackageDescription.Package.Dependency {
+  public static func package(url: Swift.String, from version: PackageDescription.Version) -> PackageDescription.Package.Dependency
+  @available(_PackageDescription, introduced: 5.2, deprecated: 5.6, message: "use package(url:from:) instead")
+  public static func package(name: Swift.String, url: Swift.String, from version: PackageDescription.Version) -> PackageDescription.Package.Dependency
+  @available(_PackageDescription 5.5)
+  public static func package(url: Swift.String, branch: Swift.String) -> PackageDescription.Package.Dependency
+  @available(_PackageDescription, introduced: 5.5, deprecated: 5.6, message: "use package(url:branch:) instead")
+  public static func package(name: Swift.String, url: Swift.String, branch: Swift.String) -> PackageDescription.Package.Dependency
+  @available(_PackageDescription 5.5)
+  public static func package(url: Swift.String, revision: Swift.String) -> PackageDescription.Package.Dependency
+  @available(_PackageDescription, introduced: 5.5, deprecated: 5.6, message: "use package(url:revision:) instead")
+  public static func package(name: Swift.String, url: Swift.String, revision: Swift.String) -> PackageDescription.Package.Dependency
+  public static func package(url: Swift.String, _ range: Swift.Range<PackageDescription.Version>) -> PackageDescription.Package.Dependency
+  @available(_PackageDescription, introduced: 5.2, deprecated: 5.6, message: "use package(url:_:) instead")
+  public static func package(name: Swift.String, url: Swift.String, _ range: Swift.Range<PackageDescription.Version>) -> PackageDescription.Package.Dependency
+  public static func package(url: Swift.String, _ range: Swift.ClosedRange<PackageDescription.Version>) -> PackageDescription.Package.Dependency
+  @available(_PackageDescription, introduced: 5.2, deprecated: 5.6, message: "use package(url:_:) instead")
+  public static func package(name: Swift.String, url: Swift.String, _ range: Swift.ClosedRange<PackageDescription.Version>) -> PackageDescription.Package.Dependency
+  @available(_PackageDescription 5.6)
+  public static func package(url: Swift.String, exact version: PackageDescription.Version) -> PackageDescription.Package.Dependency
+  @available(_PackageDescription, deprecated: 5.6, message: "use specific requirement APIs instead (e.g. use 'branch:' instead of '.branch')")
+  public static func package(url: Swift.String, _ requirement: PackageDescription.Package.Dependency.Requirement) -> PackageDescription.Package.Dependency
+  @available(_PackageDescription, introduced: 5.2, deprecated: 5.6, message: "use specific requirement APIs instead (e.g. use 'branch:' instead of '.branch')")
+  public static func package(name: Swift.String?, url: Swift.String, _ requirement: PackageDescription.Package.Dependency.Requirement) -> PackageDescription.Package.Dependency
+}
+extension PackageDescription.Package.Dependency {
+  @available(_PackageDescription 5.7)
+  public static func package(id: Swift.String, from version: PackageDescription.Version) -> PackageDescription.Package.Dependency
+  @available(_PackageDescription 5.7)
+  public static func package(id: Swift.String, exact version: PackageDescription.Version) -> PackageDescription.Package.Dependency
+  @available(_PackageDescription 5.7)
+  public static func package(id: Swift.String, _ range: Swift.Range<PackageDescription.Version>) -> PackageDescription.Package.Dependency
+  @available(_PackageDescription 5.7)
+  public static func package(id: Swift.String, _ range: Swift.ClosedRange<PackageDescription.Version>) -> PackageDescription.Package.Dependency
+}
+extension PackageDescription.Package.Dependency {
+  @available(*, unavailable, message: "use package(url:exact:) instead")
+  public static func package(url: Swift.String, version: PackageDescription.Version) -> PackageDescription.Package.Dependency
+  @available(*, unavailable, message: "use package(url:_:) instead")
+  public static func package(url: Swift.String, range: Swift.Range<PackageDescription.Version>) -> PackageDescription.Package.Dependency
+}
+final public class Package {
+  final public var name: Swift.String
+  @available(_PackageDescription 5)
+  final public var platforms: [PackageDescription.SupportedPlatform]?
+  @available(_PackageDescription 5.3)
+  final public var defaultLocalization: PackageDescription.LanguageTag?
+  final public var pkgConfig: Swift.String?
+  final public var providers: [PackageDescription.SystemPackageProvider]?
+  final public var targets: [PackageDescription.Target]
+  final public var products: [PackageDescription.Product]
+  final public var dependencies: [PackageDescription.Package.Dependency]
+  final public var swiftLanguageVersions: [PackageDescription.SwiftVersion]?
+  final public var cLanguageStandard: PackageDescription.CLanguageStandard?
+  final public var cxxLanguageStandard: PackageDescription.CXXLanguageStandard?
+  @available(_PackageDescription, obsoleted: 4.2)
+  public init(name: Swift.String, pkgConfig: Swift.String? = nil, providers: [PackageDescription.SystemPackageProvider]? = nil, products: [PackageDescription.Product] = [], dependencies: [PackageDescription.Package.Dependency] = [], targets: [PackageDescription.Target] = [], swiftLanguageVersions: [Swift.Int]? = nil, cLanguageStandard: PackageDescription.CLanguageStandard? = nil, cxxLanguageStandard: PackageDescription.CXXLanguageStandard? = nil)
+  @available(_PackageDescription, introduced: 4.2, obsoleted: 5)
+  public init(name: Swift.String, pkgConfig: Swift.String? = nil, providers: [PackageDescription.SystemPackageProvider]? = nil, products: [PackageDescription.Product] = [], dependencies: [PackageDescription.Package.Dependency] = [], targets: [PackageDescription.Target] = [], swiftLanguageVersions: [PackageDescription.SwiftVersion]? = nil, cLanguageStandard: PackageDescription.CLanguageStandard? = nil, cxxLanguageStandard: PackageDescription.CXXLanguageStandard? = nil)
+  @available(_PackageDescription, introduced: 5, obsoleted: 5.3)
+  public init(name: Swift.String, platforms: [PackageDescription.SupportedPlatform]? = nil, pkgConfig: Swift.String? = nil, providers: [PackageDescription.SystemPackageProvider]? = nil, products: [PackageDescription.Product] = [], dependencies: [PackageDescription.Package.Dependency] = [], targets: [PackageDescription.Target] = [], swiftLanguageVersions: [PackageDescription.SwiftVersion]? = nil, cLanguageStandard: PackageDescription.CLanguageStandard? = nil, cxxLanguageStandard: PackageDescription.CXXLanguageStandard? = nil)
+  @available(_PackageDescription 5.3)
+  public init(name: Swift.String, defaultLocalization: PackageDescription.LanguageTag? = nil, platforms: [PackageDescription.SupportedPlatform]? = nil, pkgConfig: Swift.String? = nil, providers: [PackageDescription.SystemPackageProvider]? = nil, products: [PackageDescription.Product] = [], dependencies: [PackageDescription.Package.Dependency] = [], targets: [PackageDescription.Target] = [], swiftLanguageVersions: [PackageDescription.SwiftVersion]? = nil, cLanguageStandard: PackageDescription.CLanguageStandard? = nil, cxxLanguageStandard: PackageDescription.CXXLanguageStandard? = nil)
+  @objc deinit
+}
+public struct LanguageTag : Swift.Hashable {
+}
+extension PackageDescription.LanguageTag : Swift.RawRepresentable {
+  public var rawValue: Swift.String {
+    get
+  }
+  public init?(rawValue: Swift.String)
+  public typealias RawValue = Swift.String
+}
+extension PackageDescription.LanguageTag : Swift.ExpressibleByStringLiteral {
+  public init(stringLiteral value: Swift.String)
+  public init(extendedGraphemeClusterLiteral value: Swift.String)
+  public init(unicodeScalarLiteral value: Swift.String)
+  public typealias ExtendedGraphemeClusterLiteralType = Swift.String
+  public typealias StringLiteralType = Swift.String
+  public typealias UnicodeScalarLiteralType = Swift.String
+}
+extension PackageDescription.LanguageTag : Swift.CustomStringConvertible {
+  public var description: Swift.String {
+    get
+  }
+}
+public enum SystemPackageProvider {
+  case brewItem([Swift.String])
+  case aptItem([Swift.String])
+  @available(_PackageDescription 5.3)
+  case yumItem([Swift.String])
+  @available(_PackageDescription 999.0)
+  case nugetItem([Swift.String])
+  public static func brew(_ packages: [Swift.String]) -> PackageDescription.SystemPackageProvider
+  public static func apt(_ packages: [Swift.String]) -> PackageDescription.SystemPackageProvider
+  @available(_PackageDescription 5.3)
+  public static func yum(_ packages: [Swift.String]) -> PackageDescription.SystemPackageProvider
+  @available(_PackageDescription 999.0)
+  public static func nuget(_ packages: [Swift.String]) -> PackageDescription.SystemPackageProvider
+}
+extension PackageDescription.Package.Dependency {
+  @available(_PackageDescription, deprecated: 5.6)
+  public enum Requirement {
+    case exactItem(PackageDescription.Version)
+    case rangeItem(Swift.Range<PackageDescription.Version>)
+    case revisionItem(Swift.String)
+    case branchItem(Swift.String)
+    case localPackageItem
+  }
+}
+@available(_PackageDescription, deprecated: 5.6)
+extension PackageDescription.Package.Dependency.Requirement {
+  @available(_PackageDescription, deprecated: 5.6)
+  public static func exact(_ version: PackageDescription.Version) -> PackageDescription.Package.Dependency.Requirement
+  @available(_PackageDescription, deprecated: 5.6)
+  public static func revision(_ ref: Swift.String) -> PackageDescription.Package.Dependency.Requirement
+  @available(_PackageDescription, deprecated: 5.6)
+  public static func branch(_ name: Swift.String) -> PackageDescription.Package.Dependency.Requirement
+}
+extension PackageDescription.Package.Dependency {
+  @available(_PackageDescription 5.6)
+  public enum SourceControlRequirement {
+    case exact(PackageDescription.Version)
+    case range(Swift.Range<PackageDescription.Version>)
+    case revision(Swift.String)
+    case branch(Swift.String)
+  }
+}
+extension PackageDescription.Package.Dependency {
+  @available(_PackageDescription 999)
+  public enum RegistryRequirement {
+    case exact(PackageDescription.Version)
+    case range(Swift.Range<PackageDescription.Version>)
+  }
+}
+extension Swift.Range {
+  public static func upToNextMajor(from version: PackageDescription.Version) -> Swift.Range<Bound> where Bound == PackageDescription.Version
+  public static func upToNextMinor(from version: PackageDescription.Version) -> Swift.Range<Bound> where Bound == PackageDescription.Version
+}
+@available(_PackageDescription, deprecated: 5.6)
+extension PackageDescription.Package.Dependency.Requirement {
+  @_disfavoredOverload public static func upToNextMajor(from version: PackageDescription.Version) -> PackageDescription.Package.Dependency.Requirement
+  @_disfavoredOverload public static func upToNextMinor(from version: PackageDescription.Version) -> PackageDescription.Package.Dependency.Requirement
+}
+@_hasMissingDesignatedInitializers public class Product {
+  final public let name: Swift.String
+  @_hasMissingDesignatedInitializers final public class Executable : PackageDescription.Product {
+    final public let targets: [Swift.String]
+    @_spi(PackageProductSettings) final public let settings: [PackageDescription.ProductSetting]
+    @objc deinit
+  }
+  @_hasMissingDesignatedInitializers final public class Library : PackageDescription.Product {
+    public enum LibraryType : Swift.String {
+      case `static`
+      case dynamic
+      public init?(rawValue: Swift.String)
+      public typealias RawValue = Swift.String
+      public var rawValue: Swift.String {
+        get
+      }
+    }
+    final public let targets: [Swift.String]
+    final public let type: PackageDescription.Product.Library.LibraryType?
+    @objc deinit
+  }
+  @_hasMissingDesignatedInitializers final public class Plugin : PackageDescription.Product {
+    final public let targets: [Swift.String]
+    @objc deinit
+  }
+  public static func library(name: Swift.String, type: PackageDescription.Product.Library.LibraryType? = nil, targets: [Swift.String]) -> PackageDescription.Product
+  public static func executable(name: Swift.String, targets: [Swift.String]) -> PackageDescription.Product
+  @_spi(PackageProductSettings) public static func executable(name: Swift.String, targets: [Swift.String], settings: [PackageDescription.ProductSetting]) -> PackageDescription.Product
+  @available(_PackageDescription 5.5)
+  public static func plugin(name: Swift.String, targets: [Swift.String]) -> PackageDescription.Product
+  @objc deinit
+}
+@_spi(PackageProductSettings) public enum ProductSetting : Swift.Equatable {
+  @_spi(PackageProductSettings) public static func == (a: PackageDescription.ProductSetting, b: PackageDescription.ProductSetting) -> Swift.Bool
+}
+@available(_PackageDescription 5.3)
+public struct Resource {
+  public enum Localization : Swift.String {
+    case `default`
+    case base
+    public init?(rawValue: Swift.String)
+    public typealias RawValue = Swift.String
+    public var rawValue: Swift.String {
+      get
+    }
+  }
+  public static func process(_ path: Swift.String, localization: PackageDescription.Resource.Localization? = nil) -> PackageDescription.Resource
+  public static func copy(_ path: Swift.String) -> PackageDescription.Resource
+  @available(_PackageDescription 5.9)
+  public static func embedInCode(_ path: Swift.String) -> PackageDescription.Resource
+}
+public struct Platform : Swift.Equatable {
+  @available(_PackageDescription 5.6)
+  public static func custom(_ platformName: Swift.String) -> PackageDescription.Platform
+  public static let macOS: PackageDescription.Platform
+  public static let macCatalyst: PackageDescription.Platform
+  public static let iOS: PackageDescription.Platform
+  public static let tvOS: PackageDescription.Platform
+  public static let watchOS: PackageDescription.Platform
+  public static let visionOS: PackageDescription.Platform
+  public static let driverKit: PackageDescription.Platform
+  public static let linux: PackageDescription.Platform
+  @available(_PackageDescription 5.2)
+  public static let windows: PackageDescription.Platform
+  @available(_PackageDescription 5.2)
+  public static let android: PackageDescription.Platform
+  @available(_PackageDescription 5.3)
+  public static let wasi: PackageDescription.Platform
+  @available(_PackageDescription 5.8)
+  public static let openbsd: PackageDescription.Platform
+  public static func == (a: PackageDescription.Platform, b: PackageDescription.Platform) -> Swift.Bool
+}
+public struct SupportedPlatform : Swift.Equatable {
+  public static func macOS(_ version: PackageDescription.SupportedPlatform.MacOSVersion) -> PackageDescription.SupportedPlatform
+  public static func macOS(_ versionString: Swift.String) -> PackageDescription.SupportedPlatform
+  @available(_PackageDescription 5.5)
+  public static func macCatalyst(_ version: PackageDescription.SupportedPlatform.MacCatalystVersion) -> PackageDescription.SupportedPlatform
+  @available(_PackageDescription 5.5)
+  public static func macCatalyst(_ versionString: Swift.String) -> PackageDescription.SupportedPlatform
+  public static func iOS(_ version: PackageDescription.SupportedPlatform.IOSVersion) -> PackageDescription.SupportedPlatform
+  public static func iOS(_ versionString: Swift.String) -> PackageDescription.SupportedPlatform
+  public static func tvOS(_ version: PackageDescription.SupportedPlatform.TVOSVersion) -> PackageDescription.SupportedPlatform
+  public static func tvOS(_ versionString: Swift.String) -> PackageDescription.SupportedPlatform
+  public static func watchOS(_ version: PackageDescription.SupportedPlatform.WatchOSVersion) -> PackageDescription.SupportedPlatform
+  public static func watchOS(_ versionString: Swift.String) -> PackageDescription.SupportedPlatform
+  @available(_PackageDescription 5.9)
+  public static func visionOS(_ version: PackageDescription.SupportedPlatform.VisionOSVersion) -> PackageDescription.SupportedPlatform
+  @available(_PackageDescription 5.9)
+  public static func visionOS(_ versionString: Swift.String) -> PackageDescription.SupportedPlatform
+  @available(_PackageDescription 5.5)
+  public static func driverKit(_ version: PackageDescription.SupportedPlatform.DriverKitVersion) -> PackageDescription.SupportedPlatform
+  @available(_PackageDescription 5.5)
+  public static func driverKit(_ versionString: Swift.String) -> PackageDescription.SupportedPlatform
+  @available(_PackageDescription 5.6)
+  public static func custom(_ platformName: Swift.String, versionString: Swift.String) -> PackageDescription.SupportedPlatform
+  public static func == (a: PackageDescription.SupportedPlatform, b: PackageDescription.SupportedPlatform) -> Swift.Bool
+}
+extension PackageDescription.SupportedPlatform {
+  public struct MacOSVersion {
+    @available(_PackageDescription, introduced: 5.0, deprecated: 5.7, message: "macOS 10.13 is the oldest supported version")
+    public static let v10_10: PackageDescription.SupportedPlatform.MacOSVersion
+    @available(_PackageDescription, introduced: 5.0, deprecated: 5.7, message: "macOS 10.13 is the oldest supported version")
+    public static let v10_11: PackageDescription.SupportedPlatform.MacOSVersion
+    @available(_PackageDescription, introduced: 5.0, deprecated: 5.7, message: "macOS 10.13 is the oldest supported version")
+    public static let v10_12: PackageDescription.SupportedPlatform.MacOSVersion
+    @available(_PackageDescription 5.0)
+    public static let v10_13: PackageDescription.SupportedPlatform.MacOSVersion
+    @available(_PackageDescription 5.0)
+    public static let v10_14: PackageDescription.SupportedPlatform.MacOSVersion
+    @available(_PackageDescription 5.1)
+    public static let v10_15: PackageDescription.SupportedPlatform.MacOSVersion
+    @available(_PackageDescription 5.3)
+    @available(*, unavailable, renamed: "v11")
+    public static let v10_16: PackageDescription.SupportedPlatform.MacOSVersion
+    @available(_PackageDescription 5.3)
+    public static let v11: PackageDescription.SupportedPlatform.MacOSVersion
+    @available(_PackageDescription 5.5)
+    public static let v12: PackageDescription.SupportedPlatform.MacOSVersion
+    @available(_PackageDescription 5.7)
+    public static let v13: PackageDescription.SupportedPlatform.MacOSVersion
+    @available(_PackageDescription 5.9)
+    public static let v14: PackageDescription.SupportedPlatform.MacOSVersion
+  }
+  public struct TVOSVersion {
+    @available(_PackageDescription, introduced: 5.0, deprecated: 5.7, message: "tvOS 12.0 is the oldest supported version")
+    public static let v9: PackageDescription.SupportedPlatform.TVOSVersion
+    @available(_PackageDescription, introduced: 5.0, deprecated: 5.7, message: "tvOS 12.0 is the oldest supported version")
+    public static let v10: PackageDescription.SupportedPlatform.TVOSVersion
+    @available(_PackageDescription, introduced: 5.0, deprecated: 5.9, message: "tvOS 12.0 is the oldest supported version")
+    public static let v11: PackageDescription.SupportedPlatform.TVOSVersion
+    @available(_PackageDescription 5.0)
+    public static let v12: PackageDescription.SupportedPlatform.TVOSVersion
+    @available(_PackageDescription 5.1)
+    public static let v13: PackageDescription.SupportedPlatform.TVOSVersion
+    @available(_PackageDescription 5.3)
+    public static let v14: PackageDescription.SupportedPlatform.TVOSVersion
+    @available(_PackageDescription 5.5)
+    public static let v15: PackageDescription.SupportedPlatform.TVOSVersion
+    @available(_PackageDescription 5.7)
+    public static let v16: PackageDescription.SupportedPlatform.TVOSVersion
+    @available(_PackageDescription 5.9)
+    public static let v17: PackageDescription.SupportedPlatform.TVOSVersion
+  }
+  public struct MacCatalystVersion {
+    @available(_PackageDescription 5.5)
+    public static let v13: PackageDescription.SupportedPlatform.MacCatalystVersion
+    @available(_PackageDescription 5.5)
+    public static let v14: PackageDescription.SupportedPlatform.MacCatalystVersion
+    @available(_PackageDescription 5.5)
+    public static let v15: PackageDescription.SupportedPlatform.MacCatalystVersion
+    @available(_PackageDescription 5.7)
+    public static let v16: PackageDescription.SupportedPlatform.MacCatalystVersion
+    @available(_PackageDescription 5.9)
+    public static let v17: PackageDescription.SupportedPlatform.MacCatalystVersion
+  }
+  public struct IOSVersion {
+    @available(_PackageDescription, introduced: 5.0, deprecated: 5.7, message: "iOS 12.0 is the oldest supported version")
+    public static let v8: PackageDescription.SupportedPlatform.IOSVersion
+    @available(_PackageDescription, introduced: 5.0, deprecated: 5.7, message: "iOS 12.0 is the oldest supported version")
+    public static let v9: PackageDescription.SupportedPlatform.IOSVersion
+    @available(_PackageDescription, introduced: 5.0, deprecated: 5.7, message: "iOS 12.0 is the oldest supported version")
+    public static let v10: PackageDescription.SupportedPlatform.IOSVersion
+    @available(_PackageDescription, introduced: 5.0, deprecated: 5.9, message: "iOS 12.0 is the oldest supported version")
+    public static let v11: PackageDescription.SupportedPlatform.IOSVersion
+    @available(_PackageDescription 5.0)
+    public static let v12: PackageDescription.SupportedPlatform.IOSVersion
+    @available(_PackageDescription 5.1)
+    public static let v13: PackageDescription.SupportedPlatform.IOSVersion
+    @available(_PackageDescription 5.3)
+    public static let v14: PackageDescription.SupportedPlatform.IOSVersion
+    @available(_PackageDescription 5.5)
+    public static let v15: PackageDescription.SupportedPlatform.IOSVersion
+    @available(_PackageDescription 5.7)
+    public static let v16: PackageDescription.SupportedPlatform.IOSVersion
+    @available(_PackageDescription 5.9)
+    public static let v17: PackageDescription.SupportedPlatform.IOSVersion
+  }
+  public struct WatchOSVersion {
+    @available(_PackageDescription, introduced: 5.0, deprecated: 5.7, message: "watchOS 4.0 is the oldest supported version")
+    public static let v2: PackageDescription.SupportedPlatform.WatchOSVersion
+    @available(_PackageDescription, introduced: 5.0, deprecated: 5.7, message: "watchOS 4.0 is the oldest supported version")
+    public static let v3: PackageDescription.SupportedPlatform.WatchOSVersion
+    @available(_PackageDescription 5.0)
+    public static let v4: PackageDescription.SupportedPlatform.WatchOSVersion
+    @available(_PackageDescription 5.0)
+    public static let v5: PackageDescription.SupportedPlatform.WatchOSVersion
+    @available(_PackageDescription 5.1)
+    public static let v6: PackageDescription.SupportedPlatform.WatchOSVersion
+    @available(_PackageDescription 5.3)
+    public static let v7: PackageDescription.SupportedPlatform.WatchOSVersion
+    @available(_PackageDescription 5.5)
+    public static let v8: PackageDescription.SupportedPlatform.WatchOSVersion
+    @available(_PackageDescription 5.7)
+    public static let v9: PackageDescription.SupportedPlatform.WatchOSVersion
+    @available(_PackageDescription 5.9)
+    public static let v10: PackageDescription.SupportedPlatform.WatchOSVersion
+  }
+  public struct VisionOSVersion {
+    @available(_PackageDescription 5.9)
+    public static let v1: PackageDescription.SupportedPlatform.VisionOSVersion
+  }
+  public struct DriverKitVersion {
+    @available(_PackageDescription 5.5)
+    public static let v19: PackageDescription.SupportedPlatform.DriverKitVersion
+    @available(_PackageDescription 5.5)
+    public static let v20: PackageDescription.SupportedPlatform.DriverKitVersion
+    @available(_PackageDescription 5.5)
+    public static let v21: PackageDescription.SupportedPlatform.DriverKitVersion
+    @available(_PackageDescription 5.7)
+    public static let v22: PackageDescription.SupportedPlatform.DriverKitVersion
+    @available(_PackageDescription 5.9)
+    public static let v23: PackageDescription.SupportedPlatform.DriverKitVersion
+  }
+  public struct CustomPlatformVersion {
+  }
+}
+final public class Target {
+  public enum TargetType : Swift.String {
+    case regular
+    case executable
+    case test
+    case system
+    case binary
+    case plugin
+    case macro
+    public init?(rawValue: Swift.String)
+    public typealias RawValue = Swift.String
+    public var rawValue: Swift.String {
+      get
+    }
+  }
+  public enum Dependency {
+    case targetItem(name: Swift.String, condition: PackageDescription.TargetDependencyCondition?)
+    case productItem(name: Swift.String, package: Swift.String?, moduleAliases: [Swift.String : Swift.String]?, condition: PackageDescription.TargetDependencyCondition?)
+    case byNameItem(name: Swift.String, condition: PackageDescription.TargetDependencyCondition?)
+  }
+  final public var name: Swift.String
+  final public var path: Swift.String?
+  @available(_PackageDescription 5.3)
+  final public var url: Swift.String?
+  final public var sources: [Swift.String]?
+  @available(_PackageDescription 5.3)
+  final public var resources: [PackageDescription.Resource]?
+  final public var exclude: [Swift.String]
+  final public var isTest: Swift.Bool {
+    get
+  }
+  final public var dependencies: [PackageDescription.Target.Dependency]
+  final public var publicHeadersPath: Swift.String?
+  final public let type: PackageDescription.Target.TargetType
+  final public let packageAccess: Swift.Bool
+  final public let pkgConfig: Swift.String?
+  final public let providers: [PackageDescription.SystemPackageProvider]?
+  @available(_PackageDescription 5.5)
+  final public var pluginCapability: PackageDescription.Target.PluginCapability?
+  public enum PluginCapability {
+    @available(_PackageDescription 5.5)
+    case buildTool
+    @available(_PackageDescription 5.6)
+    case command(intent: PackageDescription.PluginCommandIntent, permissions: [PackageDescription.PluginPermission] = [])
+  }
+  @available(_PackageDescription 5)
+  final public var cSettings: [PackageDescription.CSetting]?
+  @available(_PackageDescription 5)
+  final public var cxxSettings: [PackageDescription.CXXSetting]?
+  @available(_PackageDescription 5)
+  final public var swiftSettings: [PackageDescription.SwiftSetting]?
+  @available(_PackageDescription 5)
+  final public var linkerSettings: [PackageDescription.LinkerSetting]?
+  @available(_PackageDescription 5.3)
+  final public var checksum: Swift.String?
+  @available(_PackageDescription 5.5)
+  final public var plugins: [PackageDescription.Target.PluginUsage]?
+  @available(_PackageDescription 5.5)
+  public enum PluginUsage {
+    case plugin(name: Swift.String, package: Swift.String?)
+  }
+  @_spi(PackageDescriptionInternal) public init(name: Swift.String, dependencies: [PackageDescription.Target.Dependency], path: Swift.String?, url: Swift.String? = nil, exclude: [Swift.String], sources: [Swift.String]?, resources: [PackageDescription.Resource]? = nil, publicHeadersPath: Swift.String?, type: PackageDescription.Target.TargetType, packageAccess: Swift.Bool, pkgConfig: Swift.String? = nil, providers: [PackageDescription.SystemPackageProvider]? = nil, pluginCapability: PackageDescription.Target.PluginCapability? = nil, cSettings: [PackageDescription.CSetting]? = nil, cxxSettings: [PackageDescription.CXXSetting]? = nil, swiftSettings: [PackageDescription.SwiftSetting]? = nil, linkerSettings: [PackageDescription.LinkerSetting]? = nil, checksum: Swift.String? = nil, plugins: [PackageDescription.Target.PluginUsage]? = nil)
+  @available(_PackageDescription, introduced: 4, obsoleted: 5)
+  public static func target(name: Swift.String, dependencies: [PackageDescription.Target.Dependency] = [], path: Swift.String? = nil, exclude: [Swift.String] = [], sources: [Swift.String]? = nil, publicHeadersPath: Swift.String? = nil) -> PackageDescription.Target
+  @available(_PackageDescription, introduced: 5, obsoleted: 5.3)
+  public static func target(name: Swift.String, dependencies: [PackageDescription.Target.Dependency] = [], path: Swift.String? = nil, exclude: [Swift.String] = [], sources: [Swift.String]? = nil, publicHeadersPath: Swift.String? = nil, cSettings: [PackageDescription.CSetting]? = nil, cxxSettings: [PackageDescription.CXXSetting]? = nil, swiftSettings: [PackageDescription.SwiftSetting]? = nil, linkerSettings: [PackageDescription.LinkerSetting]? = nil) -> PackageDescription.Target
+  @available(_PackageDescription, introduced: 5.3, obsoleted: 5.5)
+  public static func target(name: Swift.String, dependencies: [PackageDescription.Target.Dependency] = [], path: Swift.String? = nil, exclude: [Swift.String] = [], sources: [Swift.String]? = nil, resources: [PackageDescription.Resource]? = nil, publicHeadersPath: Swift.String? = nil, cSettings: [PackageDescription.CSetting]? = nil, cxxSettings: [PackageDescription.CXXSetting]? = nil, swiftSettings: [PackageDescription.SwiftSetting]? = nil, linkerSettings: [PackageDescription.LinkerSetting]? = nil) -> PackageDescription.Target
+  @available(_PackageDescription, introduced: 5.5, obsoleted: 5.9)
+  public static func target(name: Swift.String, dependencies: [PackageDescription.Target.Dependency] = [], path: Swift.String? = nil, exclude: [Swift.String] = [], sources: [Swift.String]? = nil, resources: [PackageDescription.Resource]? = nil, publicHeadersPath: Swift.String? = nil, cSettings: [PackageDescription.CSetting]? = nil, cxxSettings: [PackageDescription.CXXSetting]? = nil, swiftSettings: [PackageDescription.SwiftSetting]? = nil, linkerSettings: [PackageDescription.LinkerSetting]? = nil, plugins: [PackageDescription.Target.PluginUsage]? = nil) -> PackageDescription.Target
+  @available(_PackageDescription 5.9)
+  public static func target(name: Swift.String, dependencies: [PackageDescription.Target.Dependency] = [], path: Swift.String? = nil, exclude: [Swift.String] = [], sources: [Swift.String]? = nil, resources: [PackageDescription.Resource]? = nil, publicHeadersPath: Swift.String? = nil, packageAccess: Swift.Bool = true, cSettings: [PackageDescription.CSetting]? = nil, cxxSettings: [PackageDescription.CXXSetting]? = nil, swiftSettings: [PackageDescription.SwiftSetting]? = nil, linkerSettings: [PackageDescription.LinkerSetting]? = nil, plugins: [PackageDescription.Target.PluginUsage]? = nil) -> PackageDescription.Target
+  @available(_PackageDescription, introduced: 5.4, obsoleted: 5.5)
+  public static func executableTarget(name: Swift.String, dependencies: [PackageDescription.Target.Dependency] = [], path: Swift.String? = nil, exclude: [Swift.String] = [], sources: [Swift.String]? = nil, resources: [PackageDescription.Resource]? = nil, publicHeadersPath: Swift.String? = nil, cSettings: [PackageDescription.CSetting]? = nil, cxxSettings: [PackageDescription.CXXSetting]? = nil, swiftSettings: [PackageDescription.SwiftSetting]? = nil, linkerSettings: [PackageDescription.LinkerSetting]? = nil) -> PackageDescription.Target
+  @available(_PackageDescription, introduced: 5.5, obsoleted: 5.9)
+  public static func executableTarget(name: Swift.String, dependencies: [PackageDescription.Target.Dependency] = [], path: Swift.String? = nil, exclude: [Swift.String] = [], sources: [Swift.String]? = nil, resources: [PackageDescription.Resource]? = nil, publicHeadersPath: Swift.String? = nil, cSettings: [PackageDescription.CSetting]? = nil, cxxSettings: [PackageDescription.CXXSetting]? = nil, swiftSettings: [PackageDescription.SwiftSetting]? = nil, linkerSettings: [PackageDescription.LinkerSetting]? = nil, plugins: [PackageDescription.Target.PluginUsage]? = nil) -> PackageDescription.Target
+  @available(_PackageDescription 5.9)
+  public static func executableTarget(name: Swift.String, dependencies: [PackageDescription.Target.Dependency] = [], path: Swift.String? = nil, exclude: [Swift.String] = [], sources: [Swift.String]? = nil, resources: [PackageDescription.Resource]? = nil, publicHeadersPath: Swift.String? = nil, packageAccess: Swift.Bool = true, cSettings: [PackageDescription.CSetting]? = nil, cxxSettings: [PackageDescription.CXXSetting]? = nil, swiftSettings: [PackageDescription.SwiftSetting]? = nil, linkerSettings: [PackageDescription.LinkerSetting]? = nil, plugins: [PackageDescription.Target.PluginUsage]? = nil) -> PackageDescription.Target
+  @available(_PackageDescription, introduced: 4, obsoleted: 5)
+  public static func testTarget(name: Swift.String, dependencies: [PackageDescription.Target.Dependency] = [], path: Swift.String? = nil, exclude: [Swift.String] = [], sources: [Swift.String]? = nil) -> PackageDescription.Target
+  @available(_PackageDescription, introduced: 5, obsoleted: 5.3)
+  public static func testTarget(name: Swift.String, dependencies: [PackageDescription.Target.Dependency] = [], path: Swift.String? = nil, exclude: [Swift.String] = [], sources: [Swift.String]? = nil, cSettings: [PackageDescription.CSetting]? = nil, cxxSettings: [PackageDescription.CXXSetting]? = nil, swiftSettings: [PackageDescription.SwiftSetting]? = nil, linkerSettings: [PackageDescription.LinkerSetting]? = nil) -> PackageDescription.Target
+  @available(_PackageDescription, introduced: 5.3, obsoleted: 5.5)
+  public static func testTarget(name: Swift.String, dependencies: [PackageDescription.Target.Dependency] = [], path: Swift.String? = nil, exclude: [Swift.String] = [], sources: [Swift.String]? = nil, resources: [PackageDescription.Resource]? = nil, cSettings: [PackageDescription.CSetting]? = nil, cxxSettings: [PackageDescription.CXXSetting]? = nil, swiftSettings: [PackageDescription.SwiftSetting]? = nil, linkerSettings: [PackageDescription.LinkerSetting]? = nil) -> PackageDescription.Target
+  @available(_PackageDescription, introduced: 5.5, obsoleted: 5.9)
+  public static func testTarget(name: Swift.String, dependencies: [PackageDescription.Target.Dependency] = [], path: Swift.String? = nil, exclude: [Swift.String] = [], sources: [Swift.String]? = nil, resources: [PackageDescription.Resource]? = nil, cSettings: [PackageDescription.CSetting]? = nil, cxxSettings: [PackageDescription.CXXSetting]? = nil, swiftSettings: [PackageDescription.SwiftSetting]? = nil, linkerSettings: [PackageDescription.LinkerSetting]? = nil, plugins: [PackageDescription.Target.PluginUsage]? = nil) -> PackageDescription.Target
+  @available(_PackageDescription 5.9)
+  public static func testTarget(name: Swift.String, dependencies: [PackageDescription.Target.Dependency] = [], path: Swift.String? = nil, exclude: [Swift.String] = [], sources: [Swift.String]? = nil, resources: [PackageDescription.Resource]? = nil, packageAccess: Swift.Bool = true, cSettings: [PackageDescription.CSetting]? = nil, cxxSettings: [PackageDescription.CXXSetting]? = nil, swiftSettings: [PackageDescription.SwiftSetting]? = nil, linkerSettings: [PackageDescription.LinkerSetting]? = nil, plugins: [PackageDescription.Target.PluginUsage]? = nil) -> PackageDescription.Target
+  public static func systemLibrary(name: Swift.String, path: Swift.String? = nil, pkgConfig: Swift.String? = nil, providers: [PackageDescription.SystemPackageProvider]? = nil) -> PackageDescription.Target
+  @available(_PackageDescription 5.3)
+  public static func binaryTarget(name: Swift.String, url: Swift.String, checksum: Swift.String) -> PackageDescription.Target
+  @available(_PackageDescription 5.3)
+  public static func binaryTarget(name: Swift.String, path: Swift.String) -> PackageDescription.Target
+  @available(_PackageDescription, introduced: 5.5, obsoleted: 5.9)
+  public static func plugin(name: Swift.String, capability: PackageDescription.Target.PluginCapability, dependencies: [PackageDescription.Target.Dependency] = [], path: Swift.String? = nil, exclude: [Swift.String] = [], sources: [Swift.String]? = nil) -> PackageDescription.Target
+  @available(_PackageDescription 5.9)
+  public static func plugin(name: Swift.String, capability: PackageDescription.Target.PluginCapability, dependencies: [PackageDescription.Target.Dependency] = [], path: Swift.String? = nil, exclude: [Swift.String] = [], sources: [Swift.String]? = nil, packageAccess: Swift.Bool = true) -> PackageDescription.Target
+  @objc deinit
+}
+extension PackageDescription.Target.Dependency {
+  @available(_PackageDescription, obsoleted: 5.7, message: "use .product(name:package:condition) instead.")
+  public static func productItem(name: Swift.String, package: Swift.String? = nil, condition: PackageDescription.TargetDependencyCondition? = nil) -> PackageDescription.Target.Dependency
+  @available(_PackageDescription, obsoleted: 5.3)
+  public static func target(name: Swift.String) -> PackageDescription.Target.Dependency
+  @available(_PackageDescription, obsoleted: 5.2, message: "the 'package' argument is mandatory as of tools version 5.2")
+  public static func product(name: Swift.String, package: Swift.String? = nil) -> PackageDescription.Target.Dependency
+  @available(_PackageDescription 5.7)
+  public static func product(name: Swift.String, package: Swift.String? = nil, moduleAliases: [Swift.String : Swift.String]? = nil) -> PackageDescription.Target.Dependency
+  @available(_PackageDescription, obsoleted: 5.3)
+  public static func byName(name: Swift.String) -> PackageDescription.Target.Dependency
+  @available(_PackageDescription, introduced: 5.2, obsoleted: 5.3)
+  public static func product(name: Swift.String, package: Swift.String) -> PackageDescription.Target.Dependency
+  @available(_PackageDescription 5.3)
+  public static func target(name: Swift.String, condition: PackageDescription.TargetDependencyCondition? = nil) -> PackageDescription.Target.Dependency
+  @available(_PackageDescription, introduced: 5.3, obsoleted: 5.7)
+  @_disfavoredOverload public static func product(name: Swift.String, package: Swift.String, condition: PackageDescription.TargetDependencyCondition? = nil) -> PackageDescription.Target.Dependency
+  @available(_PackageDescription 5.7)
+  public static func product(name: Swift.String, package: Swift.String, moduleAliases: [Swift.String : Swift.String]? = nil, condition: PackageDescription.TargetDependencyCondition? = nil) -> PackageDescription.Target.Dependency
+  @available(_PackageDescription 5.3)
+  public static func byName(name: Swift.String, condition: PackageDescription.TargetDependencyCondition? = nil) -> PackageDescription.Target.Dependency
+}
+public struct TargetDependencyCondition {
+  @available(_PackageDescription, obsoleted: 5.7, message: "using .when with nil platforms is obsolete")
+  @_disfavoredOverload public static func when(platforms: [PackageDescription.Platform]? = nil) -> PackageDescription.TargetDependencyCondition
+  @available(_PackageDescription 5.7)
+  public static func when(platforms: [PackageDescription.Platform]) -> PackageDescription.TargetDependencyCondition?
+}
+extension PackageDescription.Target.PluginCapability {
+  @available(_PackageDescription 5.5)
+  public static func buildTool() -> PackageDescription.Target.PluginCapability
+}
+@available(_PackageDescription 5.6)
+public enum PluginCommandIntent {
+  case documentationGeneration
+  case sourceCodeFormatting
+  case custom(verb: Swift.String, description: Swift.String)
+}
+@available(_PackageDescription 5.6)
+extension PackageDescription.PluginCommandIntent {
+  public static func documentationGeneration() -> PackageDescription.PluginCommandIntent
+  public static func sourceCodeFormatting() -> PackageDescription.PluginCommandIntent
+}
+@available(_PackageDescription 5.6)
+public enum PluginPermission {
+  @available(_PackageDescription 5.9)
+  case allowNetworkConnections(scope: PackageDescription.PluginNetworkPermissionScope, reason: Swift.String)
+  case writeToPackageDirectory(reason: Swift.String)
+}
+@available(_PackageDescription 5.9)
+public enum PluginNetworkPermissionScope {
+  case none
+  case local(ports: [Swift.Int] = [])
+  case all(ports: [Swift.Int] = [])
+  case docker
+  case unixDomainSocket
+  public static func all(ports: Swift.Range<Swift.Int>) -> PackageDescription.PluginNetworkPermissionScope
+  public static func local(ports: Swift.Range<Swift.Int>) -> PackageDescription.PluginNetworkPermissionScope
+}
+extension PackageDescription.Target.PluginUsage {
+  @available(_PackageDescription 5.5)
+  public static func plugin(name: Swift.String) -> PackageDescription.Target.PluginUsage
+}
+extension PackageDescription.Target.Dependency : Swift.ExpressibleByStringLiteral {
+  public init(stringLiteral value: Swift.String)
+  public typealias ExtendedGraphemeClusterLiteralType = Swift.String
+  public typealias StringLiteralType = Swift.String
+  public typealias UnicodeScalarLiteralType = Swift.String
+}
+extension PackageDescription.Target.PluginUsage : Swift.ExpressibleByStringLiteral {
+  public init(stringLiteral value: Swift.String)
+  public typealias ExtendedGraphemeClusterLiteralType = Swift.String
+  public typealias StringLiteralType = Swift.String
+  public typealias UnicodeScalarLiteralType = Swift.String
+}
+extension PackageDescription.Version : Swift.ExpressibleByStringLiteral {
+  public init(stringLiteral value: Swift.String)
+  public init(extendedGraphemeClusterLiteral value: Swift.String)
+  public init(unicodeScalarLiteral value: Swift.String)
+  public typealias ExtendedGraphemeClusterLiteralType = Swift.String
+  public typealias StringLiteralType = Swift.String
+  public typealias UnicodeScalarLiteralType = Swift.String
+}
+extension PackageDescription.Version : Swift.LosslessStringConvertible {
+  public init?(_ versionString: Swift.String)
+}
+public struct Version {
+  public let major: Swift.Int
+  public let minor: Swift.Int
+  public let patch: Swift.Int
+  public let prereleaseIdentifiers: [Swift.String]
+  public let buildMetadataIdentifiers: [Swift.String]
+  public init(_ major: Swift.Int, _ minor: Swift.Int, _ patch: Swift.Int, prereleaseIdentifiers: [Swift.String] = [], buildMetadataIdentifiers: [Swift.String] = [])
+}
+extension PackageDescription.Version : Swift.Comparable {
+  @inlinable public static func == (lhs: PackageDescription.Version, rhs: PackageDescription.Version) -> Swift.Bool {
+        !(lhs < rhs) && !(lhs > rhs)
+    }
+  public static func < (lhs: PackageDescription.Version, rhs: PackageDescription.Version) -> Swift.Bool
+}
+extension PackageDescription.Version : Swift.CustomStringConvertible {
+  public var description: Swift.String {
+    get
+  }
+}
+extension PackageDescription.SwiftSetting.InteroperabilityMode : Swift.Equatable {}
+extension PackageDescription.SwiftSetting.InteroperabilityMode : Swift.Hashable {}
+extension PackageDescription.SwiftSetting.InteroperabilityMode : Swift.RawRepresentable {}
+extension PackageDescription.CLanguageStandard : Swift.Equatable {}
+extension PackageDescription.CLanguageStandard : Swift.Hashable {}
+extension PackageDescription.CLanguageStandard : Swift.RawRepresentable {}
+extension PackageDescription.CXXLanguageStandard : Swift.Equatable {}
+extension PackageDescription.CXXLanguageStandard : Swift.Hashable {}
+extension PackageDescription.CXXLanguageStandard : Swift.RawRepresentable {}
+extension PackageDescription.Product.Library.LibraryType : Swift.Equatable {}
+extension PackageDescription.Product.Library.LibraryType : Swift.Hashable {}
+extension PackageDescription.Product.Library.LibraryType : Swift.RawRepresentable {}
+@available(_PackageDescription 5.3)
+extension PackageDescription.Resource.Localization : Swift.Equatable {}
+@available(_PackageDescription 5.3)
+extension PackageDescription.Resource.Localization : Swift.Hashable {}
+@available(_PackageDescription 5.3)
+extension PackageDescription.Resource.Localization : Swift.RawRepresentable {}
+extension PackageDescription.Target.TargetType : Swift.Equatable {}
+extension PackageDescription.Target.TargetType : Swift.Hashable {}
+extension PackageDescription.Target.TargetType : Swift.RawRepresentable {}
