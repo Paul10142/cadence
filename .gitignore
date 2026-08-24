@@ -3,3 +3,6 @@ build/
 
 # Machine-specific notes
 CLT-FIX.md
+
+# macOS
+.DS_Store
