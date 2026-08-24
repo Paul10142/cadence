@@ -10,7 +10,9 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/Paul10142/cadence/releases/latest"><b>⬇ Download the latest release</b></a>
+  <b><a href="https://paul10142.github.io/cadence/">cadence website</a></b>
+  &nbsp;·&nbsp;
+  <b><a href="https://github.com/Paul10142/cadence/releases/latest">⬇ Download the latest release</a></b>
 </p>
 
 ---
@@ -135,3 +137,9 @@ ad-hoc, and produces a DMG. Requires macOS 13 or later, Apple Silicon.
   [Menu Bar Countdown](https://github.com/kristopherjohnson/MenuBarCountdown).
 
 MIT licensed. See [LICENSE](LICENSE).
+
+---
+
+<p align="center">
+  <a href="https://paul10142.github.io/cadence/">paul10142.github.io/cadence</a>
+</p>
