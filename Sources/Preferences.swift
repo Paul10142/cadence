@@ -7,10 +7,11 @@ final class Preferences {
 
     enum Key: String {
         case startPause, restart, finish
-        case pauseDuringSleep, pauseDuringScreensaver, startOnClick
+        case startGeneralTimer, startPomodoroTimer
+        case pauseDuringSleep, pauseDuringScreensaver, startOnClick, confirmClear
         case timerConfig, announcement
         case alertBlink, alertWindow, alertNotification, alertNotificationSound, alertSpeak
-        case displaySeconds, showTimerWindowAtLaunch
+        case displaySeconds, showTimerWindowAtLaunch, lastTimerMode
     }
 
     static let didChange = Notification.Name("ThymeCustomPreferencesDidChange")
@@ -30,6 +31,7 @@ final class Preferences {
             Key.announcement.rawValue: "Done",
             Key.displaySeconds.rawValue: true,
             Key.showTimerWindowAtLaunch.rawValue: false,
+            Key.confirmClear.rawValue: false,
         ])
     }
 
@@ -70,6 +72,7 @@ final class Preferences {
     private func flag(_ key: Key) -> Bool { defaults.bool(forKey: key.rawValue) }
     private func setFlag(_ value: Bool, _ key: Key) { defaults.set(value, forKey: key.rawValue) }
 
+    var confirmClear: Bool { get { flag(.confirmClear) } set { setFlag(newValue, .confirmClear) } }
     var alertBlink: Bool { get { flag(.alertBlink) } set { setFlag(newValue, .alertBlink) } }
     var alertWindow: Bool { get { flag(.alertWindow) } set { setFlag(newValue, .alertWindow) } }
     var alertNotification: Bool { get { flag(.alertNotification) } set { setFlag(newValue, .alertNotification) } }
@@ -78,6 +81,12 @@ final class Preferences {
     var displaySeconds: Bool { get { flag(.displaySeconds) } set { setFlag(newValue, .displaySeconds) } }
     var showTimerWindowAtLaunch: Bool {
         get { flag(.showTimerWindowAtLaunch) } set { setFlag(newValue, .showTimerWindowAtLaunch) }
+    }
+
+    /// 0 = general, 1 = pomodoro. The settings window reopens where you left it.
+    var lastTimerMode: Int {
+        get { defaults.integer(forKey: Key.lastTimerMode.rawValue) }
+        set { defaults.set(newValue, forKey: Key.lastTimerMode.rawValue) }
     }
 
     var announcement: String {
@@ -173,7 +182,7 @@ final class PreferencesWindowController: NSWindowController {
     static let shared = PreferencesWindowController()
 
     private init() {
-        let window = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 560, height: 250),
+        let window = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 580, height: 330),
                               styleMask: [.titled, .closable, .miniaturizable],
                               backing: .buffered, defer: false)
         window.title = "Thyme Custom Preferences"
@@ -200,6 +209,8 @@ final class PreferencesWindowController: NSWindowController {
             ("Start / Pause:", .startPause),
             ("Restart:", .restart),
             ("Finish:", .finish),
+            ("Start General Timer:", .startGeneralTimer),
+            ("Start Pomodoro Timer:", .startPomodoroTimer),
         ]
 
         let grid = NSGridView(numberOfColumns: 2, rows: 0)
@@ -227,7 +238,11 @@ final class PreferencesWindowController: NSWindowController {
                                       target: self, action: #selector(toggleScreensaver(_:)))
         screensaverBox.state = Preferences.shared.pauseDuringScreensaver ? .on : .off
 
-        let checks = NSStackView(views: [clickBox, sleepBox, screensaverBox])
+        let confirmBox = NSButton(checkboxWithTitle: "Ask before clearing sessions",
+                                  target: self, action: #selector(toggleConfirmClear(_:)))
+        confirmBox.state = Preferences.shared.confirmClear ? .on : .off
+
+        let checks = NSStackView(views: [clickBox, sleepBox, screensaverBox, confirmBox])
         checks.orientation = .vertical
         checks.alignment = .leading
         checks.spacing = 8
@@ -241,10 +256,17 @@ final class PreferencesWindowController: NSWindowController {
             grid.centerXAnchor.constraint(equalTo: content.centerXAnchor),
             checks.topAnchor.constraint(equalTo: grid.bottomAnchor, constant: 22),
             checks.leadingAnchor.constraint(equalTo: grid.leadingAnchor),
-            checks.bottomAnchor.constraint(lessThanOrEqualTo: content.bottomAnchor, constant: -20),
+            checks.bottomAnchor.constraint(equalTo: content.bottomAnchor, constant: -24),
+            grid.trailingAnchor.constraint(lessThanOrEqualTo: content.trailingAnchor, constant: -24),
         ])
 
         window.contentView = content
+        // Size to the content so nothing is clipped as rows are added.
+        window.setContentSize(content.fittingSize)
+    }
+
+    @objc private func toggleConfirmClear(_ sender: NSButton) {
+        Preferences.shared.confirmClear = (sender.state == .on)
     }
 
     @objc private func toggleStartOnClick(_ sender: NSButton) {

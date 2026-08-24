@@ -2,9 +2,31 @@ import Foundation
 
 // MARK: - Session
 
+enum SessionKind: String, Codable {
+    case stopwatch, timer
+
+    var symbolName: String { self == .stopwatch ? "stopwatch" : "hourglass" }
+    var label: String { self == .stopwatch ? "Stopwatch" : "Timer" }
+}
+
 struct Session: Codable {
     let seconds: Int
     let date: Date
+    var kind: SessionKind = .stopwatch
+
+    init(seconds: Int, date: Date, kind: SessionKind = .stopwatch) {
+        self.seconds = seconds
+        self.date = date
+        self.kind = kind
+    }
+
+    // Sessions saved before kinds existed decode as stopwatch entries.
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        seconds = try c.decode(Int.self, forKey: .seconds)
+        date = try c.decode(Date.self, forKey: .date)
+        kind = try c.decodeIfPresent(SessionKind.self, forKey: .kind) ?? .stopwatch
+    }
 }
 
 // MARK: - Formatting
@@ -69,8 +91,8 @@ final class SessionStore {
         }
     }
 
-    func add(seconds: Int, date: Date = Date()) {
-        sessions.append(Session(seconds: seconds, date: date))
+    func add(seconds: Int, kind: SessionKind = .stopwatch, date: Date = Date()) {
+        sessions.append(Session(seconds: seconds, date: date, kind: kind))
         save()
     }
 

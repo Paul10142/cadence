@@ -70,7 +70,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         requestNotificationPermission()
 
         if Preferences.shared.showTimerWindowAtLaunch {
-            TimerSettingsWindowController.shared.show()
+            let mode = TimerSettingsWindowController.Mode(
+                rawValue: Preferences.shared.lastTimerMode) ?? .general
+            TimerSettingsWindowController.shared.show(mode: mode)
         }
     }
 
@@ -129,6 +131,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
         if wantsMenu || !Preferences.shared.startOnClick {
             showMenu()
+        } else if timer.state == .running {
+            // Clicking a running stopwatch pauses it and opens the menu, so the
+            // frozen time is right there to read.
+            timer.pause()
+            pausedBySystem = false
+            showMenu()
         } else {
             toggleStartPause()
         }
@@ -160,6 +168,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         let isIdle = timer.state == .idle
         let startTitle = timer.state == .running ? "Pause" : "Start"
 
+        menu.addItem(header("Stopwatch"))
         menu.addItem(item(startTitle, #selector(toggleStartPause), key: .startPause, enabled: true))
         menu.addItem(item("Restart", #selector(restart), key: .restart, enabled: !isIdle))
         menu.addItem(item("Finish", #selector(finish), key: .finish, enabled: !isIdle))
@@ -179,31 +188,41 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         menu.addItem(item("Quit", #selector(quit), enabled: true))
     }
 
+    /// A dimmed, non-clickable section label.
+    private func header(_ text: String) -> NSMenuItem {
+        let item = NSMenuItem(title: text, action: nil, keyEquivalent: "")
+        item.isEnabled = false
+        item.attributedTitle = NSAttributedString(string: text, attributes: [
+            .font: NSFont.systemFont(ofSize: NSFont.smallSystemFontSize, weight: .semibold),
+            .foregroundColor: NSColor.secondaryLabelColor,
+        ])
+        return item
+    }
+
     private func addTimerSection() {
         menu.addItem(.separator())
+        menu.addItem(header("Timer"))
 
-        let header = NSMenuItem(title: "Timer", action: nil, keyEquivalent: "")
-        header.isEnabled = false
-        menu.addItem(header)
+        menu.addItem(item("Start General Timer\u{2026}", #selector(startGeneralTimer),
+                          key: .startGeneralTimer, enabled: true))
+        menu.addItem(item("Start Pomodoro Timer\u{2026}", #selector(startPomodoroTimer),
+                          key: .startPomodoroTimer, enabled: true))
 
         if countdown.isActive, let status = countdown.statusLine {
             let detail = countdown.state == .finished
                 ? status
                 : "\(status) \u{00B7} \(TimeFormat.clock(countdown.remainingSeconds)) left"
-            let line = NSMenuItem(title: "    \(detail)", action: nil, keyEquivalent: "")
+            let line = NSMenuItem(title: detail, action: nil, keyEquivalent: "")
             line.isEnabled = false
             menu.addItem(line)
 
             if countdown.state == .running {
-                menu.addItem(item("    Pause Timer", #selector(pauseTimer), enabled: true))
+                menu.addItem(item("Pause Timer", #selector(pauseTimer), enabled: true))
             } else if countdown.state == .paused {
-                menu.addItem(item("    Resume Timer", #selector(resumeTimer), enabled: true))
+                menu.addItem(item("Resume Timer", #selector(resumeTimer), enabled: true))
             }
-            menu.addItem(item("    Restart Timer", #selector(restartTimer), enabled: true))
-            menu.addItem(item("    Stop Timer", #selector(stopTimer), enabled: true))
-            menu.addItem(item("    Timer Settings\u{2026}", #selector(showTimerSettings), enabled: true))
-        } else {
-            menu.addItem(item("    Start Timer\u{2026}", #selector(showTimerSettings), enabled: true))
+            menu.addItem(item("Restart Timer", #selector(restartTimer), enabled: true))
+            menu.addItem(item("Stop Timer", #selector(stopTimer), enabled: true))
         }
     }
 
@@ -215,6 +234,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         for session in shown {
             let entry = NSMenuItem(title: TimeFormat.menuLine(session), action: nil, keyEquivalent: "")
             entry.isEnabled = false
+            // A stopwatch or hourglass glyph shows which kind of session it was.
+            if let icon = NSImage(systemSymbolName: session.kind.symbolName,
+                                  accessibilityDescription: session.kind.label) {
+                let config = NSImage.SymbolConfiguration(pointSize: 11, weight: .regular)
+                let sized = icon.withSymbolConfiguration(config) ?? icon
+                sized.isTemplate = true
+                entry.image = sized
+            }
             menu.addItem(entry)
         }
 
@@ -222,7 +249,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             let title = showAllSessions
                 ? "Show Fewer Sessions"
                 : "Show All Sessions (\(store.sessions.count))"
-            menu.addItem(item(title, #selector(toggleSessionList), enabled: true))
+            // A custom view so the menu stays open when it is clicked.
+            let toggle = NSMenuItem()
+            toggle.view = MenuToggleItemView(title: title) { [weak self] in
+                self?.toggleSessionList()
+            }
+            menu.addItem(toggle)
         }
 
         if showAllSessions {
@@ -270,13 +302,21 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         guard timer.state != .idle else { return }
         pausedBySystem = false
         let seconds = timer.finish()
-        if seconds > 0 { store.add(seconds: seconds) }
+        if seconds > 0 { store.add(seconds: seconds, kind: .stopwatch) }
         refreshStatusItem()
     }
 
     // MARK: Timer actions
 
-    @objc private func showTimerSettings() { TimerSettingsWindowController.shared.show() }
+    @objc private func startGeneralTimer() { TimerSettingsWindowController.shared.show(mode: .general) }
+    @objc private func startPomodoroTimer() { TimerSettingsWindowController.shared.show(mode: .pomodoro) }
+
+    /// Keyboard shortcuts skip the settings window and run with what is saved.
+    private func startTimerImmediately(pomodoro: Bool) {
+        var config = Preferences.shared.timerConfig
+        config.cycling = pomodoro
+        countdown.start(config: config)
+    }
     @objc private func pauseTimer() { countdown.pause() }
     @objc private func resumeTimer() { countdown.resume() }
     @objc private func restartTimer() { countdown.restart() }
@@ -287,11 +327,16 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         refreshStatusItem()
     }
 
-    @objc private func toggleSessionList() { showAllSessions.toggle() }
+    private func toggleSessionList() {
+        showAllSessions.toggle()
+        // Rebuild in place; the menu is still open and simply re-lays out.
+        rebuildMenu()
+        menu.update()
+    }
 
     private func phaseCompleted(_ phase: CountdownTimer.Phase, length: TimeInterval, runIsOver: Bool) {
         // Work counts towards your history; breaks don't.
-        if phase == .work, Int(length) > 0 { store.add(seconds: Int(length)) }
+        if phase == .work, Int(length) > 0 { store.add(seconds: Int(length), kind: .timer) }
 
         let message: String
         if runIsOver {
@@ -399,6 +444,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     }
 
     @objc private func clear() {
+        guard Preferences.shared.confirmClear else {
+            store.clear()
+            showAllSessions = false
+            return
+        }
         let alert = NSAlert()
         alert.messageText = "Clear all sessions?"
         alert.informativeText = "This removes all \(store.sessions.count) recorded sessions. It can't be undone."
@@ -429,6 +479,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             (.startPause, { [weak self] in self?.toggleStartPause() }),
             (.restart,    { [weak self] in self?.restart() }),
             (.finish,     { [weak self] in self?.finish() }),
+            (.startGeneralTimer,  { [weak self] in self?.startTimerImmediately(pomodoro: false) }),
+            (.startPomodoroTimer, { [weak self] in self?.startTimerImmediately(pomodoro: true) }),
         ]
         var taken: [String] = []
         for (key, action) in bindings {
