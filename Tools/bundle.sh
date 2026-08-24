@@ -9,6 +9,9 @@ VERSION="1.1.0"
 APP="build/${APP_NAME}.app"
 
 mkdir -p build
+# Keep the freshly built app out of Spotlight, so searching for the app does not
+# turn up this intermediate copy alongside the one in /Applications.
+touch build/.metadata_never_index
 
 # Some Command Line Tools installs carry a stale duplicate of the SwiftBridging
 # module map, which makes importing AppKit fail. If this machine has it, hide the
