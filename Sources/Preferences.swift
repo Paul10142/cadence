@@ -23,6 +23,7 @@ final class Preferences {
         case startPause, restart, finish
         case startGeneralTimer, startPomodoroTimer
         case pauseDuringSleep, pauseDuringScreensaver, startOnClick, confirmClear, clickAction
+        case resumeAfterMenu
         case timerConfig, announcement
         case alertBlink, alertWindow, alertNotification, alertNotificationSound, alertSpeak
         case displaySeconds, showTimerWindowAtLaunch, lastTimerMode
@@ -46,6 +47,7 @@ final class Preferences {
             Key.displaySeconds.rawValue: true,
             Key.showTimerWindowAtLaunch.rawValue: false,
             Key.confirmClear.rawValue: false,
+            Key.resumeAfterMenu.rawValue: true,
         ])
     }
 
@@ -96,6 +98,9 @@ final class Preferences {
     private func flag(_ key: Key) -> Bool { defaults.bool(forKey: key.rawValue) }
     private func setFlag(_ value: Bool, _ key: Key) { defaults.set(value, forKey: key.rawValue) }
 
+    /// Opening the menu pauses a running stopwatch so the time holds still.
+    /// With this on, closing the menu without choosing anything resumes it.
+    var resumeAfterMenu: Bool { get { flag(.resumeAfterMenu) } set { setFlag(newValue, .resumeAfterMenu) } }
     var confirmClear: Bool { get { flag(.confirmClear) } set { setFlag(newValue, .confirmClear) } }
     var alertBlink: Bool { get { flag(.alertBlink) } set { setFlag(newValue, .alertBlink) } }
     var alertWindow: Bool { get { flag(.alertWindow) } set { setFlag(newValue, .alertWindow) } }
@@ -270,11 +275,15 @@ final class PreferencesWindowController: NSWindowController {
                                       target: self, action: #selector(toggleScreensaver(_:)))
         screensaverBox.state = Preferences.shared.pauseDuringScreensaver ? .on : .off
 
+        let resumeBox = NSButton(checkboxWithTitle: "Resume the stopwatch when the menu closes",
+                                 target: self, action: #selector(toggleResumeAfterMenu(_:)))
+        resumeBox.state = Preferences.shared.resumeAfterMenu ? .on : .off
+
         let confirmBox = NSButton(checkboxWithTitle: "Ask before clearing sessions",
                                   target: self, action: #selector(toggleConfirmClear(_:)))
         confirmBox.state = Preferences.shared.confirmClear ? .on : .off
 
-        let checks = NSStackView(views: [clickRow, sleepBox, screensaverBox, confirmBox])
+        let checks = NSStackView(views: [clickRow, resumeBox, sleepBox, screensaverBox, confirmBox])
         checks.orientation = .vertical
         checks.alignment = .leading
         checks.spacing = 8
@@ -299,6 +308,10 @@ final class PreferencesWindowController: NSWindowController {
 
     @objc private func toggleConfirmClear(_ sender: NSButton) {
         Preferences.shared.confirmClear = (sender.state == .on)
+    }
+
+    @objc private func toggleResumeAfterMenu(_ sender: NSButton) {
+        Preferences.shared.resumeAfterMenu = (sender.state == .on)
     }
 
     @objc private func clickActionChanged(_ sender: NSPopUpButton) {

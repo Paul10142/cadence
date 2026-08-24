@@ -19,6 +19,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     /// The stopwatch was paused by the system (sleep / screen lock), not by the
     /// user, so it should resume by itself.
     private var pausedBySystem = false
+    /// The stopwatch was paused only so the menu could be read; if the menu is
+    /// dismissed without a choice, it can pick up where it left off.
+    private var pausedForMenu = false
     /// Suppresses the shortcut-conflict alert during the initial registration at launch.
     private var didFinishLaunching = false
     /// Expanded session list in the menu.
@@ -147,6 +150,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
                 // the frozen time is right there to read.
                 timer.pause()
                 pausedBySystem = false
+                pausedForMenu = true
                 showMenu()
             } else {
                 toggleStartPause()
@@ -175,10 +179,21 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         if timer.state == .running {
             timer.pause()
             pausedBySystem = false
+            pausedForMenu = true
         }
     }
 
-    func menuDidClose(_ menu: NSMenu) { menuIsOpen = false }
+    func menuDidClose(_ menu: NSMenu) {
+        menuIsOpen = false
+        guard Preferences.shared.resumeAfterMenu, pausedForMenu else { return }
+        // Deferred by one turn of the run loop: a chosen menu item runs after
+        // this callback, and it clears the flag if it acted on the stopwatch.
+        DispatchQueue.main.async { [weak self] in
+            guard let self, self.pausedForMenu, self.timer.state == .paused else { return }
+            self.pausedForMenu = false
+            self.timer.start()
+        }
+    }
 
     private func rebuildMenu() {
         menu.removeAllItems()
@@ -301,17 +316,20 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
     @objc private func toggleStartPause() {
         pausedBySystem = false
+        pausedForMenu = false
         timer.state == .running ? timer.pause() : timer.start()
     }
 
     @objc private func restart() {
         pausedBySystem = false
+        pausedForMenu = false
         timer.restart()
     }
 
     @objc private func finish() {
         guard timer.state != .idle else { return }
         pausedBySystem = false
+        pausedForMenu = false
         let seconds = timer.finish()
         if seconds > 0 { store.add(seconds: seconds, kind: .stopwatch) }
         refreshStatusItem()

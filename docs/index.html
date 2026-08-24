@@ -3,132 +3,279 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#172554">
 <title>Thyme Custom — a menu bar timer for macOS</title>
-<meta name="description" content="A tiny stopwatch, countdown and pomodoro timer that lives in your Mac's menu bar.">
+<meta name="description" content="A free stopwatch, countdown and pomodoro timer that lives in your Mac's menu bar. Open source.">
+<link rel="icon" href="icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #ffffff; --fg: #16181d; --muted: #5c6370; --line: #e3e6ea;
-    --card: #f7f8fa; --accent: #2f6fd0; --accent-fg: #ffffff; --code-bg: #f0f2f5;
-  }
-  @media (prefers-color-scheme: dark) {
-    :root {
-      --bg: #14161a; --fg: #e8eaed; --muted: #9aa2ad; --line: #2a2e35;
-      --card: #1c1f25; --accent: #5b9bf5; --accent-fg: #0d1117; --code-bg: #21252b;
-    }
+    --navy: #172554;        /* blue-950 — brand anchor, primary CTA */
+    --navy-hover: #1E3A8A;  /* blue-900 */
+    --primary: #2563EB;     /* blue-600 — links, focus ring */
+    --tint: #EFF6FF;        /* blue-50 */
+    --tint-border: #BFDBFE; /* blue-200 */
+    --slate-900: #0F172A;   /* gradient start only */
+    --gray-900: #111827;
+    --gray-800: #1F2937;
+    --gray-600: #4B5563;
+    --gray-200: #E5E7EB;
+    --gray-50: #F9FAFB;
+    --foreground: #020817;
+    --amber: #D97706;
+    --white: #FFFFFF;
   }
   * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
   body {
-    margin: 0; background: var(--bg); color: var(--fg);
-    font: 16px/1.65 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    -webkit-font-smoothing: antialiased;
+    margin: 0; background: var(--white); color: var(--foreground);
+    font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-size: 16px; line-height: 1.65; -webkit-font-smoothing: antialiased;
   }
-  .wrap { max-width: 680px; margin: 0 auto; padding: 64px 24px 96px; }
-  header { text-align: center; margin-bottom: 56px; }
-  header img { width: 104px; height: 104px; }
-  h1 { font-size: 2.4rem; margin: 20px 0 8px; letter-spacing: -0.02em; }
-  .tagline { color: var(--muted); font-size: 1.1rem; margin: 0 auto 28px; max-width: 30rem; }
+  .container { max-width: 980px; margin: 0 auto; padding: 0 16px; }
+  .prose { max-width: 800px; margin: 0 auto; }
+  section { padding: 48px 0; }
+  a { color: var(--primary); }
+  a:focus-visible, .btn:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
+
+  /* Hero */
+  .hero { padding: 56px 0 40px; text-align: center; }
+  .hero img { width: 96px; height: 96px; }
+  h1 {
+    font-size: 2.5rem; font-weight: 700; letter-spacing: -0.02em; margin: 20px 0 12px;
+    background: linear-gradient(to right, var(--slate-900), var(--primary));
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .lead { font-size: 1.125rem; color: var(--gray-800); max-width: 34rem; margin: 0 auto 28px; }
+  .cta-row { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; }
   .btn {
-    display: inline-block; background: var(--accent); color: var(--accent-fg);
-    padding: 13px 26px; border-radius: 10px; text-decoration: none; font-weight: 600;
+    display: inline-flex; align-items: center; justify-content: center;
+    min-height: 48px; padding: 12px 26px; border-radius: 6px;
+    font-weight: 700; font-size: 1rem; text-decoration: none;
+    transition: all 200ms;
   }
-  .btn:hover { opacity: .9; }
-  .sub { color: var(--muted); font-size: .85rem; margin-top: 12px; }
-  h2 { font-size: 1.25rem; margin: 44px 0 12px; letter-spacing: -0.01em; }
+  .btn-primary {
+    background: var(--navy); color: var(--white);
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  }
+  .btn-primary:hover { background: var(--navy-hover); transform: scale(1.05); }
+  .btn-secondary {
+    background: var(--white); color: var(--navy);
+    border: 1px solid var(--navy); font-weight: 600;
+  }
+  .btn-secondary:hover { background: var(--gray-50); transform: scale(1.05); }
+  .meta { font-size: 0.875rem; color: var(--gray-600); margin-top: 16px; }
+
+  h2 { font-size: 1.875rem; font-weight: 700; color: var(--gray-900); margin: 0 0 24px; letter-spacing: -0.01em; }
+  h3 { font-size: 1.25rem; font-weight: 600; color: var(--gray-900); margin: 0 0 6px; }
   p { margin: 0 0 16px; }
+
+  .grid { display: grid; gap: 16px; grid-template-columns: 1fr; }
+  @media (min-width: 768px) { .grid { grid-template-columns: 1fr 1fr; } }
   .card {
-    background: var(--card); border: 1px solid var(--line);
-    border-radius: 12px; padding: 20px 22px; margin: 0 0 16px;
+    background: var(--tint); border: 1px solid var(--tint-border);
+    border-radius: 16px; padding: 24px;
+    box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.06), 0 4px 6px -4px rgb(0 0 0 / 0.06);
   }
-  .card h3 { margin: 0 0 6px; font-size: 1rem; }
-  .card p { margin: 0; color: var(--muted); font-size: .95rem; }
-  code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .875rem; }
+  .card p { color: var(--gray-800); margin: 0; }
+
+  .panel {
+    background: var(--white); border: 1px solid var(--gray-200);
+    border-radius: 16px; padding: 24px;
+  }
+  .panel-navy {
+    background: var(--navy); color: var(--white);
+    border: 1px solid var(--navy); border-radius: 16px; padding: 28px;
+    box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.15), 0 4px 6px -4px rgb(0 0 0 / 0.15);
+  }
+  .panel-navy h2, .panel-navy h3 { color: var(--white); }
+  .panel-navy p { color: #DBEAFE; }
+  .panel-navy a { color: var(--white); text-decoration: underline; }
+
+  ol, ul { padding-left: 22px; margin: 0 0 16px; }
+  li { margin-bottom: 10px; }
+
+  code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
   pre {
-    background: var(--code-bg); border: 1px solid var(--line); border-radius: 10px;
-    padding: 14px 16px; overflow-x: auto;
+    background: var(--slate-900); color: #E2E8F0; border-radius: 6px;
+    padding: 14px 16px; overflow-x: auto; font-size: 0.875rem; margin: 0 0 16px;
   }
-  a { color: var(--accent); }
-  ol { padding-left: 22px; }
-  li { margin-bottom: 8px; }
+  .flag {
+    display: inline-block; background: var(--amber); color: var(--white);
+    font-size: 0.75rem; font-weight: 600; border-radius: 9999px;
+    padding: 3px 12px; margin-bottom: 12px;
+  }
+  table { width: 100%; border-collapse: collapse; font-size: 0.95rem; }
+  th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--gray-200); }
+  th { color: var(--gray-900); font-weight: 600; }
+  td { color: var(--gray-800); }
+  .table-wrap { overflow-x: auto; }
+
   footer {
-    margin-top: 64px; padding-top: 24px; border-top: 1px solid var(--line);
-    color: var(--muted); font-size: .875rem; text-align: center;
+    border-top: 1px solid var(--gray-200); padding: 32px 0 56px;
+    text-align: center; color: var(--gray-600); font-size: 0.875rem;
   }
 </style>
 </head>
 <body>
-<div class="wrap">
 
-  <header>
-    <img src="icon.png" alt="Thyme Custom icon">
+<header class="hero">
+  <div class="container">
+    <img src="icon.png" alt="Thyme Custom app icon, a stopwatch">
     <h1>Thyme Custom</h1>
-    <p class="tagline">
-      A tiny stopwatch, countdown and pomodoro timer that lives in your Mac's
+    <p class="lead">
+      A free stopwatch, countdown and pomodoro timer that lives in your Mac's
       menu bar. No dock icon, no window, no account.
     </p>
-    <a class="btn" href="https://github.com/Paul10142/thyme-custom/releases/latest">Download for macOS</a>
-    <p class="sub">Free and open source · Apple Silicon · macOS 13 or later</p>
-  </header>
-
-  <h2>What it does</h2>
-
-  <div class="card">
-    <h3>Stopwatch</h3>
-    <p>Click the icon and it starts counting up. Click again to pause. Finish
-       saves the time to your history and resets.</p>
+    <div class="cta-row">
+      <a class="btn btn-primary" href="https://github.com/Paul10142/thyme-custom/releases/latest">Download for macOS</a>
+      <a class="btn btn-secondary" href="https://github.com/Paul10142/thyme-custom">Read the source code</a>
+    </div>
+    <p class="meta">Free and open source · Apple Silicon · macOS 13 or later</p>
   </div>
-  <div class="card">
-    <h3>Countdown</h3>
-    <p>Set a duration and choose what happens at zero — blink in the menu bar,
-       an alert window, a notification, or a spoken announcement.</p>
+</header>
+
+<section>
+  <div class="container">
+    <h2>What it does</h2>
+    <div class="grid">
+      <div class="card">
+        <h3>Stopwatch</h3>
+        <p>Click the icon and it counts up. Click again to pause. Finish saves
+           the time to your history and resets.</p>
+      </div>
+      <div class="card">
+        <h3>Countdown</h3>
+        <p>Set a duration and choose what happens at zero — blink in the menu
+           bar, an alert window, a notification, or a spoken announcement.</p>
+      </div>
+      <div class="card">
+        <h3>Pomodoro</h3>
+        <p>Work and break lengths over a set number of rounds, cycling
+           automatically. A rule under the time means you're working; a rule
+           above it means you're on a break.</p>
+      </div>
+      <div class="card">
+        <h3>History</h3>
+        <p>Every session is listed with a marker showing which timer produced
+           it, a running total, and a CSV export.</p>
+      </div>
+    </div>
   </div>
-  <div class="card">
-    <h3>Pomodoro</h3>
-    <p>Work and break lengths over a set number of rounds, cycling
-       automatically. A rule under the time means you're working; a rule above
-       it means you're on a break.</p>
+</section>
+
+<section>
+  <div class="container prose">
+    <h2>Installing</h2>
+    <ol>
+      <li>Download the file, open it, and drag <strong>Thyme Custom</strong> into your Applications folder.</li>
+      <li>Open it. A stopwatch appears in your menu bar — there's no window and no dock icon, which is the whole idea.</li>
+      <li>macOS will almost certainly refuse to open it the first time. That's expected — read the next section.</li>
+    </ol>
   </div>
-  <div class="card">
-    <h3>History</h3>
-    <p>Every session is listed with a marker showing which timer produced it,
-       a running total, and a CSV export.</p>
+</section>
+
+<section>
+  <div class="container prose">
+    <div class="panel-navy">
+      <span class="flag">Read this before installing</span>
+      <h2>macOS will say this app is damaged. It isn't.</h2>
+      <p>
+        Apple charges developers $99 a year for a certificate that tells macOS an
+        app is trustworthy. This is a free app given away for nothing, and there's
+        no certificate behind it — so macOS treats it as suspicious and shows a
+        scary, inaccurate message.
+      </p>
+      <p>
+        <strong>There is no way around this without paying Apple.</strong> Not a
+        setting, not a different download link. Either you tell your Mac to open
+        it anyway, or you build the app yourself from the source code.
+      </p>
+      <p>
+        You should be sceptical of any download that asks you to bypass a security
+        warning. So don't take our word for it — the
+        <a href="https://github.com/Paul10142/thyme-custom">complete source code is
+        public</a>, every line of it, and you or anyone you trust can read exactly
+        what it does before running it.
+      </p>
+    </div>
   </div>
+</section>
 
-  <h2>Installing</h2>
-  <ol>
-    <li>Download the DMG, open it, and drag <b>Thyme Custom</b> into Applications.</li>
-    <li>Open it. A stopwatch appears in your menu bar — there's no window and no
-        dock icon, which is the whole idea.</li>
-  </ol>
+<section>
+  <div class="container prose">
+    <h2>Opening it anyway</h2>
+    <p>Paste this into Terminal once, then open the app normally:</p>
+    <pre>xattr -dr com.apple.quarantine "/Applications/Thyme Custom.app"</pre>
+    <p>
+      That clears the "downloaded from the internet" flag macOS attaches to the
+      file. You only need to do it once.
+    </p>
+    <p>
+      If you'd rather not touch Terminal: open <strong>System Settings →
+      Privacy &amp; Security</strong>, scroll down, and click
+      <strong>Open Anyway</strong> next to the message about Thyme Custom.
+    </p>
+    <h3>Or build it yourself</h3>
+    <p>
+      If you'd rather not bypass anything, compile it from source. An app you
+      built on your own machine carries no warning at all.
+    </p>
+    <pre>git clone https://github.com/Paul10142/thyme-custom.git
+cd thyme-custom
+./Tools/bundle.sh</pre>
+  </div>
+</section>
 
-  <h2>If macOS says it's damaged</h2>
-  <p>
-    It isn't. This app isn't signed with a paid Apple Developer certificate, and
-    macOS is wary of anything downloaded without one. Paste this into Terminal
-    once:
-  </p>
-  <pre>xattr -dr com.apple.quarantine "/Applications/Thyme Custom.app"</pre>
-  <p>
-    That clears the "downloaded from the internet" flag. Then open it normally.
-    Alternatively, go to <b>System Settings → Privacy &amp; Security</b> and click
-    <b>Open Anyway</b>.
-  </p>
-  <p>
-    Only do this for software you trust. The complete source is on GitHub, and
-    you can build it yourself instead.
-  </p>
+<section>
+  <div class="container prose">
+    <h2>Using it</h2>
+    <div class="panel">
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Action</th><th>How</th></tr></thead>
+          <tbody>
+            <tr><td>Start / pause the stopwatch</td><td>Click the menu bar icon</td></tr>
+            <tr><td>Open the menu</td><td>Right-click the icon</td></tr>
+            <tr><td>Start a countdown</td><td>Right-click → Start General Timer</td></tr>
+            <tr><td>Start a pomodoro</td><td>Right-click → Start Pomodoro Timer</td></tr>
+            <tr><td>See your history</td><td>Right-click → Show All Sessions</td></tr>
+            <tr><td>Change how it behaves</td><td>Right-click → Preferences</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <p style="margin-top:16px">
+      Preferences lets you set system-wide keyboard shortcuts that work from any
+      app, and choose what a plain click does — open the menu, or run any of the
+      three timers.
+    </p>
+  </div>
+</section>
 
-  <h2>Where it came from</h2>
-  <p>
-    <a href="https://github.com/joaomoreno/thyme">Thyme</a> by João Moreno was a
-    lovely menu bar stopwatch, last updated in 2015 and no longer able to run on
-    Apple Silicon Macs. This is an independent rewrite in Swift with a countdown
-    and pomodoro added. It imports your old Thyme history automatically.
-  </p>
+<section>
+  <div class="container prose">
+    <h2>Where it came from</h2>
+    <p>
+      <a href="https://github.com/joaomoreno/thyme">Thyme</a> by João Moreno was a
+      lovely little menu bar stopwatch, last updated in 2015 and no longer able to
+      run on Apple Silicon Macs. This is an independent rewrite in Swift, with a
+      countdown and pomodoro timer added.
+    </p>
+  </div>
+</section>
 
-  <footer>
-    <a href="https://github.com/Paul10142/thyme-custom">Source on GitHub</a> · MIT licensed
-  </footer>
+<footer>
+  <div class="container">
+    <p>
+      <a href="https://github.com/Paul10142/thyme-custom">Source code on GitHub</a> ·
+      <a href="https://github.com/Paul10142/thyme-custom/releases/latest">Releases</a> ·
+      MIT licensed
+    </p>
+  </div>
+</footer>
 
-</div>
 </body>
 </html>

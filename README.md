@@ -23,8 +23,7 @@ longer runs on Apple Silicon Macs.
 
 This is a fresh reimplementation in Swift: the same idea, running natively on
 modern macOS, with a countdown timer and pomodoro cycling added. It is not a
-fork — no original source was copied — but it owes the whole concept to Thyme,
-and it will import your old Thyme session history automatically on first launch.
+fork — no original source was copied — but it owes the whole concept to Thyme.
 
 ## What it does
 
@@ -58,14 +57,22 @@ Mac sleeps or the screen is locked.
 3. Open it. A stopwatch appears in your menu bar — there is no dock icon and no
    window, which is the point.
 
-### If macOS refuses to open it
+### macOS will say the app is damaged. It isn't.
 
-This app is **not signed with a paid Apple Developer certificate**, because it's
-a free personal project. macOS is suspicious of anything downloaded without one,
-so you may see *"Thyme Custom is damaged and can't be opened"* or *"cannot be
-opened because the developer cannot be verified"*.
+Apple charges developers $99 a year for a certificate that tells macOS an app is
+trustworthy. This is a free app, there's no certificate behind it, and so macOS
+shows a scary and inaccurate message: *"Thyme Custom is damaged and can't be
+opened"*.
 
-Nothing is actually damaged. Open Terminal, paste this line and press return:
+**There is no way around this without paying Apple.** Either you tell your Mac to
+open it anyway, or you [build it yourself](#building-it-yourself) from this
+source — an app you compiled on your own machine carries no warning at all.
+
+You should be sceptical of any download asking you to bypass a security warning.
+So don't take my word for it: every line of this app is in this repository, and
+you or anyone you trust can read exactly what it does before running it.
+
+To open it anyway, paste this into Terminal once:
 
 ```bash
 xattr -dr com.apple.quarantine "/Applications/Thyme Custom.app"
@@ -77,9 +84,7 @@ Then open the app normally. You only need to do this once.
 If you'd rather not use Terminal: go to **System Settings → Privacy & Security**,
 scroll down, and click **Open Anyway** next to the message about Thyme Custom.
 
-> Every app on the internet asks you to do this at some point. Only do it for
-> software you actually trust — including this one. The source is all here if
-> you want to read it, and you can build it yourself instead (see below).
+> Only do this for software you actually trust — including this one.
 
 ## Using it
 
