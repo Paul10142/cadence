@@ -2,13 +2,27 @@ import AppKit
 import Carbon.HIToolbox
 
 /// User settings, backed by UserDefaults.
+/// What a plain left click on the menu bar icon does.
+enum ClickAction: Int, CaseIterable {
+    case menu = 0, stopwatch, countdown, pomodoro
+
+    var label: String {
+        switch self {
+        case .menu:      return "Open the menu"
+        case .stopwatch: return "Start / pause the stopwatch"
+        case .countdown: return "Start / pause the countdown timer"
+        case .pomodoro:  return "Start / pause the pomodoro timer"
+        }
+    }
+}
+
 final class Preferences {
     static let shared = Preferences()
 
     enum Key: String {
         case startPause, restart, finish
         case startGeneralTimer, startPomodoroTimer
-        case pauseDuringSleep, pauseDuringScreensaver, startOnClick, confirmClear
+        case pauseDuringSleep, pauseDuringScreensaver, startOnClick, confirmClear, clickAction
         case timerConfig, announcement
         case alertBlink, alertWindow, alertNotification, alertNotificationSound, alertSpeak
         case displaySeconds, showTimerWindowAtLaunch, lastTimerMode
@@ -63,10 +77,20 @@ final class Preferences {
         set { defaults.set(newValue, forKey: Key.pauseDuringScreensaver.rawValue) }
     }
 
-    /// Left click starts/pauses the timer; the menu moves to right click.
-    var startOnClick: Bool {
-        get { defaults.bool(forKey: Key.startOnClick.rawValue) }
-        set { defaults.set(newValue, forKey: Key.startOnClick.rawValue) }
+    /// Left click runs whichever timer is chosen here; the menu is on right click.
+    var clickAction: ClickAction {
+        get {
+            if let raw = defaults.object(forKey: Key.clickAction.rawValue) as? Int {
+                return ClickAction(rawValue: raw) ?? .stopwatch
+            }
+            // Carried over from the older on/off setting.
+            if defaults.object(forKey: Key.startOnClick.rawValue) != nil,
+               !defaults.bool(forKey: Key.startOnClick.rawValue) {
+                return .menu
+            }
+            return .stopwatch
+        }
+        set { defaults.set(newValue.rawValue, forKey: Key.clickAction.rawValue) }
     }
 
     private func flag(_ key: Key) -> Bool { defaults.bool(forKey: key.rawValue) }
@@ -226,9 +250,17 @@ final class PreferencesWindowController: NSWindowController {
             grid.addRow(with: [label(title), button])
         }
 
-        let clickBox = NSButton(checkboxWithTitle: "Click the menu bar icon to start / pause  (right-click for the menu)",
-                                target: self, action: #selector(toggleStartOnClick(_:)))
-        clickBox.state = Preferences.shared.startOnClick ? .on : .off
+        let clickPopUp = NSPopUpButton(frame: .zero, pullsDown: false)
+        clickPopUp.addItems(withTitles: ClickAction.allCases.map(\.label))
+        clickPopUp.selectItem(at: Preferences.shared.clickAction.rawValue)
+        clickPopUp.target = self
+        clickPopUp.action = #selector(clickActionChanged(_:))
+
+        let clickRow = NSStackView(views: [
+            NSTextField(labelWithString: "Clicking the menu bar icon:"), clickPopUp,
+        ])
+        clickRow.spacing = 8
+        clickRow.alignment = .centerY
 
         let sleepBox = NSButton(checkboxWithTitle: "Pause during sleep", target: self,
                                 action: #selector(toggleSleep(_:)))
@@ -242,7 +274,7 @@ final class PreferencesWindowController: NSWindowController {
                                   target: self, action: #selector(toggleConfirmClear(_:)))
         confirmBox.state = Preferences.shared.confirmClear ? .on : .off
 
-        let checks = NSStackView(views: [clickBox, sleepBox, screensaverBox, confirmBox])
+        let checks = NSStackView(views: [clickRow, sleepBox, screensaverBox, confirmBox])
         checks.orientation = .vertical
         checks.alignment = .leading
         checks.spacing = 8
@@ -269,8 +301,8 @@ final class PreferencesWindowController: NSWindowController {
         Preferences.shared.confirmClear = (sender.state == .on)
     }
 
-    @objc private func toggleStartOnClick(_ sender: NSButton) {
-        Preferences.shared.startOnClick = (sender.state == .on)
+    @objc private func clickActionChanged(_ sender: NSPopUpButton) {
+        Preferences.shared.clickAction = ClickAction(rawValue: sender.indexOfSelectedItem) ?? .stopwatch
     }
 
     @objc private func toggleSleep(_ sender: NSButton) {

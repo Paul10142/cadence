@@ -13,7 +13,8 @@ final class TimerSettingsWindowController: NSWindowController, NSWindowDelegate 
     var onStart: ((CountdownTimer.Config) -> Void)?
 
     /// Both modes render at one width, so the mode switch never shifts sideways.
-    private static let contentWidth: CGFloat = 400
+    /// Measured from the layout rather than guessed, so there is no dead space.
+    private var contentWidth: CGFloat = 380
 
     private var mode: Mode = .general
 
@@ -35,10 +36,10 @@ final class TimerSettingsWindowController: NSWindowController, NSWindowDelegate 
     private let speakBox = NSButton(checkboxWithTitle: "Speak announcement", target: nil, action: nil)
     private let announcement = NSTextField()
     private let secondsBox = NSButton(checkboxWithTitle: "Display seconds in menu bar", target: nil, action: nil)
-    private let atLaunchBox = NSButton(checkboxWithTitle: "Show this window when application starts", target: nil, action: nil)
+    private let atLaunchBox = NSButton(checkboxWithTitle: "Show when application starts", target: nil, action: nil)
 
     private init() {
-        let window = NSWindow(contentRect: NSRect(x: 0, y: 0, width: TimerSettingsWindowController.contentWidth, height: 520),
+        let window = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 380, height: 520),
                               styleMask: [.titled, .closable], backing: .buffered, defer: false)
         window.isReleasedWhenClosed = false
         super.init(window: window)
@@ -93,8 +94,15 @@ final class TimerSettingsWindowController: NSWindowController, NSWindowDelegate 
         modePicker.controlSize = .large
         modePicker.setWidth(120, forSegment: 0)
         modePicker.setWidth(120, forSegment: 1)
-        let pickerRow = NSStackView(views: [NSView(), modePicker, NSView()])
-        pickerRow.distribution = .fill
+        let pickerRow = NSView()
+        modePicker.translatesAutoresizingMaskIntoConstraints = false
+        pickerRow.addSubview(modePicker)
+        NSLayoutConstraint.activate([
+            modePicker.topAnchor.constraint(equalTo: pickerRow.topAnchor),
+            modePicker.bottomAnchor.constraint(equalTo: pickerRow.bottomAnchor),
+            modePicker.leadingAnchor.constraint(greaterThanOrEqualTo: pickerRow.leadingAnchor),
+            modePicker.trailingAnchor.constraint(lessThanOrEqualTo: pickerRow.trailingAnchor),
+        ])
 
         countdownRows = NSStackView(views: [
             // No trailing unit here: the label already names it.
@@ -160,18 +168,39 @@ final class TimerSettingsWindowController: NSWindowController, NSWindowDelegate 
             stack.leadingAnchor.constraint(equalTo: content.leadingAnchor, constant: pad),
             stack.trailingAnchor.constraint(equalTo: content.trailingAnchor, constant: -pad),
             stack.bottomAnchor.constraint(equalTo: content.bottomAnchor, constant: -pad),
-            pickerRow.widthAnchor.constraint(equalTo: stack.widthAnchor),
-            announcement.widthAnchor.constraint(equalTo: stack.widthAnchor),
-            buttons.widthAnchor.constraint(equalTo: stack.widthAnchor),
         ])
+        for row in [pickerRow, announcement, buttons] as [NSView] {
+            NSLayoutConstraint.activate([
+                row.leadingAnchor.constraint(equalTo: content.leadingAnchor, constant: pad),
+                row.trailingAnchor.constraint(equalTo: content.trailingAnchor, constant: -pad),
+            ])
+        }
+        // Centred against the window, not against a stack whose own width is
+        // itself decided by the solver.
+        modePicker.centerXAnchor.constraint(equalTo: content.centerXAnchor).isActive = true
         window.contentView = content
+        contentWidth = measureWidestMode(in: content)
         applyMode()
         resizeToFit()
     }
 
+    /// The window keeps one width across both modes, so it must be wide enough
+    /// for whichever mode needs more room.
+    private func measureWidestMode(in content: NSView) -> CGFloat {
+        var widest: CGFloat = 0
+        for candidate in [Mode.general, .pomodoro] {
+            countdownRows.isHidden = (candidate != .general)
+            pomodoroRows.isHidden = (candidate != .pomodoro)
+            content.layoutSubtreeIfNeeded()
+            widest = max(widest, content.fittingSize.width)
+        }
+        return ceil(widest)
+    }
+
     private func resizeToFit() {
         guard let window, let content = window.contentView else { return }
-        window.setContentSize(NSSize(width: Self.contentWidth, height: content.fittingSize.height))
+        content.layoutSubtreeIfNeeded()
+        window.setContentSize(NSSize(width: contentWidth, height: content.fittingSize.height))
     }
 
     // MARK: Loading and saving

@@ -136,16 +136,25 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             if !wantsMenu { return }
         }
 
-        if wantsMenu || !Preferences.shared.startOnClick {
+        guard !wantsMenu else { return showMenu() }
+
+        switch Preferences.shared.clickAction {
+        case .menu:
             showMenu()
-        } else if timer.state == .running {
-            // Clicking a running stopwatch pauses it and opens the menu, so the
-            // frozen time is right there to read.
-            timer.pause()
-            pausedBySystem = false
-            showMenu()
-        } else {
-            toggleStartPause()
+        case .stopwatch:
+            if timer.state == .running {
+                // Clicking a running stopwatch pauses it and opens the menu, so
+                // the frozen time is right there to read.
+                timer.pause()
+                pausedBySystem = false
+                showMenu()
+            } else {
+                toggleStartPause()
+            }
+        case .countdown:
+            clickCountdown(pomodoro: false)
+        case .pomodoro:
+            clickCountdown(pomodoro: true)
         }
     }
 
@@ -258,8 +267,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         line.isEnabled = false
         menu.addItem(line)
 
-        // Clearing only makes sense next to the list it wipes.
-        menu.addItem(item("Clear", #selector(clear), enabled: true))
+        // Clearing only makes sense next to the list it wipes, and like the
+        // toggle above it should not dismiss the menu.
+        let clearItem = NSMenuItem()
+        clearItem.view = MenuToggleItemView(title: "Clear") { [weak self] in
+            self?.clearSessions()
+        }
+        menu.addItem(clearItem)
     }
 
     private func item(_ title: String, _ action: Selector,
@@ -307,6 +321,22 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
     @objc private func startGeneralTimer() { TimerSettingsWindowController.shared.show(mode: .general) }
     @objc private func startPomodoroTimer() { TimerSettingsWindowController.shared.show(mode: .pomodoro) }
+
+    /// Clicking the icon runs the countdown the same way it runs the stopwatch:
+    /// start, then pause and show the menu, then resume.
+    private func clickCountdown(pomodoro: Bool) {
+        switch countdown.state {
+        case .running:
+            countdown.pause()
+            showMenu()
+        case .paused:
+            countdown.resume()
+        case .idle, .finished:
+            var config = Preferences.shared.timerConfig
+            config.cycling = pomodoro
+            countdown.start(config: config)
+        }
+    }
 
     /// Keyboard shortcuts skip the settings window: they start the timer with
     /// whatever is saved, and stop it if one is already running.
@@ -445,10 +475,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         }
     }
 
-    @objc private func clear() {
+    private func clearSessions() {
         guard Preferences.shared.confirmClear else {
             store.clear()
             showAllSessions = false
+            rebuildMenu()
+            menu.update()
             return
         }
         let alert = NSAlert()
@@ -461,6 +493,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         if alert.runModal() == .alertFirstButtonReturn {
             store.clear()
             showAllSessions = false
+            rebuildMenu()
+            menu.update()
         }
     }
 
