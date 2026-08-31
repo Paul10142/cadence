@@ -1,5 +1,26 @@
 import Foundation
 
+// Menu bar formatting: seconds always tick, and anything an hour or over reads
+// as hours:minutes rather than a runaway minute count.
+var formatFailures: [String] = []
+func expect(_ actual: String, _ expected: String, _ what: String) {
+    if actual != expected { formatFailures.append("\(what): got \(actual), expected \(expected)") }
+}
+expect(TimeFormat.clock(60 * 60), "1:00:00", "60 min with seconds")
+expect(TimeFormat.clock(135 * 60), "2:15:00", "2h15m with seconds")
+expect(TimeFormat.clock(59), "00:59", "59s with seconds")
+expect(TimeFormat.minuteClock(135 * 60), "2:15", "2h15m without seconds")
+expect(TimeFormat.minuteClock(45 * 60), "45m", "45 min without seconds")
+expect(TimeFormat.minuteClock(30), "1m", "30s without seconds")
+expect(TimeFormat.minuteClock(0), "<1m", "zero without seconds")
+if formatFailures.isEmpty {
+    print("formatting: PASS")
+} else {
+    formatFailures.forEach { print("formatting: \($0)") }
+    print("formatting: FAIL")
+    exit(1)
+}
+
 // Exercises the work/break cycling state machine at high speed.
 let t = CountdownTimer()
 var log: [String] = []

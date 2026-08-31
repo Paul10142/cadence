@@ -41,6 +41,17 @@ enum TimeFormat {
             : String(format: "%02d:%02d", m, sec)
     }
 
+    /// "2:15", "45m", "<1m" -- the same clock at minute resolution, for when
+    /// seconds are turned off. Anything an hour or over reads as h:mm rather
+    /// than piling up into a three-digit minute count.
+    static func minuteClock(_ totalSeconds: Int) -> String {
+        let minutes = Int((Double(max(0, totalSeconds)) / 60).rounded(.up))
+        if minutes < 1 { return "<1m" }
+        return minutes >= 60
+            ? String(format: "%d:%02d", minutes / 60, minutes % 60)
+            : "\(minutes)m"
+    }
+
     private static let stamp: DateFormatter = {
         let f = DateFormatter()
         f.dateStyle = .medium

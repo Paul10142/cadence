@@ -26,7 +26,8 @@ final class Preferences {
         case resumeAfterMenu
         case timerConfig, announcement
         case alertBlink, alertWindow, alertNotification, alertNotificationSound, alertSpeak
-        case displaySeconds, showTimerWindowAtLaunch, lastTimerMode
+        case hideSeconds, showTimerWindowAtLaunch, lastTimerMode
+        case openAtLoginOffered
     }
 
     static let didChange = Notification.Name("CadencePreferencesDidChange")
@@ -44,7 +45,6 @@ final class Preferences {
             Key.alertNotificationSound.rawValue: true,
             Key.alertSpeak.rawValue: false,
             Key.announcement.rawValue: "Done",
-            Key.displaySeconds.rawValue: true,
             Key.showTimerWindowAtLaunch.rawValue: false,
             Key.confirmClear.rawValue: false,
             Key.resumeAfterMenu.rawValue: true,
@@ -107,7 +107,19 @@ final class Preferences {
     var alertNotification: Bool { get { flag(.alertNotification) } set { setFlag(newValue, .alertNotification) } }
     var alertNotificationSound: Bool { get { flag(.alertNotificationSound) } set { setFlag(newValue, .alertNotificationSound) } }
     var alertSpeak: Bool { get { flag(.alertSpeak) } set { setFlag(newValue, .alertSpeak) } }
-    var displaySeconds: Bool { get { flag(.displaySeconds) } set { setFlag(newValue, .displaySeconds) } }
+    /// The menu bar counts down in seconds unless this is turned off. Stored
+    /// as "hide" so the seconds-on default holds for everyone, including anyone
+    /// carrying the older, minute-only setting.
+    var displaySeconds: Bool {
+        get { !flag(.hideSeconds) }
+        set { setFlag(!newValue, .hideSeconds) }
+    }
+
+    /// Whether the one-time "open Cadence at login?" prompt has been shown.
+    var openAtLoginOffered: Bool {
+        get { flag(.openAtLoginOffered) } set { setFlag(newValue, .openAtLoginOffered) }
+    }
+
     var showTimerWindowAtLaunch: Bool {
         get { flag(.showTimerWindowAtLaunch) } set { setFlag(newValue, .showTimerWindowAtLaunch) }
     }
@@ -210,6 +222,9 @@ final class ShortcutRecorderButton: NSButton {
 final class PreferencesWindowController: NSWindowController {
     static let shared = PreferencesWindowController()
 
+    private let loginBox = NSButton(checkboxWithTitle: "Open Cadence at login",
+                                    target: nil, action: nil)
+
     private init() {
         let window = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 580, height: 330),
                               styleMask: [.titled, .closable, .miniaturizable],
@@ -283,7 +298,13 @@ final class PreferencesWindowController: NSWindowController {
                                   target: self, action: #selector(toggleConfirmClear(_:)))
         confirmBox.state = Preferences.shared.confirmClear ? .on : .off
 
-        let checks = NSStackView(views: [clickRow, resumeBox, sleepBox, screensaverBox, confirmBox])
+        loginBox.target = self
+        loginBox.action = #selector(toggleOpenAtLogin(_:))
+        loginBox.state = LoginItem.isEnabled ? .on : .off
+        loginBox.isEnabled = LoginItem.isAvailable
+
+        let checks = NSStackView(views: [clickRow, loginBox, resumeBox, sleepBox,
+                                         screensaverBox, confirmBox])
         checks.orientation = .vertical
         checks.alignment = .leading
         checks.spacing = 8
@@ -304,6 +325,14 @@ final class PreferencesWindowController: NSWindowController {
         window.contentView = content
         // Size to the content so nothing is clipped as rows are added.
         window.setContentSize(content.fittingSize)
+    }
+
+    @objc private func toggleOpenAtLogin(_ sender: NSButton) {
+        let wanted = sender.state == .on
+        guard !LoginItem.setEnabled(wanted) else { return }
+        // The system refused, so the checkbox must not claim otherwise.
+        sender.state = LoginItem.isEnabled ? .on : .off
+        if wanted { LoginItem.openLoginItemsSettings() }
     }
 
     @objc private func toggleConfirmClear(_ sender: NSButton) {
@@ -327,6 +356,8 @@ final class PreferencesWindowController: NSWindowController {
     }
 
     func show() {
+        // The user may have changed this in System Settings since last time.
+        loginBox.state = LoginItem.isEnabled ? .on : .off
         NSApp.activate(ignoringOtherApps: true)
         window?.makeKeyAndOrderFront(nil)
     }
