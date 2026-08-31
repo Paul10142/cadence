@@ -256,6 +256,7 @@ final class PreferencesWindowController: NSWindowController, NSWindowDelegate {
     private let notifySoundBox = NSButton(checkboxWithTitle: "With sound", target: nil, action: nil)
     private let speakBox = NSButton(checkboxWithTitle: "Speak announcement", target: nil, action: nil)
     private let announcementField = NSTextField()
+    private let announcementLabel = NSTextField(labelWithString: "Announcement:")
 
     private init() {
         let window = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 580, height: 330),
@@ -402,7 +403,7 @@ final class PreferencesWindowController: NSWindowController, NSWindowDelegate {
             box.action = #selector(alertsChanged(_:))
             box.state = on ? .on : .off
         }
-        notifySoundBox.isEnabled = alerts.notification
+        applyAlertEnablement()
 
         let indentedSound = NSStackView(views: [notifySoundBox])
         indentedSound.edgeInsets = NSEdgeInsets(top: 0, left: 18, bottom: 0, right: 0)
@@ -412,9 +413,7 @@ final class PreferencesWindowController: NSWindowController, NSWindowDelegate {
         announcementField.target = self
         announcementField.action = #selector(alertsChanged(_:))
         announcementField.widthAnchor.constraint(equalToConstant: 260).isActive = true
-        let announcementRow = NSStackView(views: [
-            NSTextField(labelWithString: "Announcement:"), announcementField,
-        ])
+        let announcementRow = NSStackView(views: [announcementLabel, announcementField])
         announcementRow.spacing = 8
         announcementRow.alignment = .centerY
 
@@ -437,13 +436,22 @@ final class PreferencesWindowController: NSWindowController, NSWindowDelegate {
         notifySoundBox.state = alerts.notificationSound ? .on : .off
         speakBox.state = alerts.speak ? .on : .off
         announcementField.stringValue = alerts.announcement
-        notifySoundBox.isEnabled = alerts.notification
+        applyAlertEnablement()
+    }
+
+    /// A sub-setting is dimmed until the box it belongs to is ticked: the sound
+    /// under notifications, the phrase under the spoken announcement.
+    private func applyAlertEnablement() {
+        notifySoundBox.isEnabled = notifyBox.state == .on
+        let speaking = speakBox.state == .on
+        announcementField.isEnabled = speaking
+        announcementLabel.isEnabled = speaking
     }
 
     /// Any alert control writes the whole set back, so the window and the saved
     /// settings can never disagree.
     @objc private func alertsChanged(_ sender: NSControl) {
-        notifySoundBox.isEnabled = notifyBox.state == .on
+        applyAlertEnablement()
         Preferences.shared.generalAlerts = AlertSettings(
             blink: blinkBox.state == .on,
             window: windowBox.state == .on,
