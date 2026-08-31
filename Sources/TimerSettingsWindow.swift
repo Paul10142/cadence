@@ -9,8 +9,9 @@ final class TimerSettingsWindowController: NSWindowController, NSWindowDelegate,
 
     enum Mode: Int { case general = 0, pomodoro = 1 }
 
-    /// Called when the user presses Start.
-    var onStart: ((CountdownTimer.Config) -> Void)?
+    /// Called when the user presses Start, with the alert set this one run
+    /// should use -- the general set, plus whatever was changed here.
+    var onStart: ((CountdownTimer.Config, AlertSettings) -> Void)?
 
     /// Both modes render at one width, so the mode switch never shifts sideways.
     /// Measured from the layout rather than guessed, so there is no dead space.
@@ -39,8 +40,6 @@ final class TimerSettingsWindowController: NSWindowController, NSWindowDelegate,
     private let notifySoundBox = NSButton(checkboxWithTitle: "With sound", target: nil, action: nil)
     private let speakBox = NSButton(checkboxWithTitle: "Speak announcement", target: nil, action: nil)
     private let announcement = NSTextField()
-    private let secondsBox = NSButton(checkboxWithTitle: "Display seconds in menu bar", target: nil, action: nil)
-    private let atLaunchBox = NSButton(checkboxWithTitle: "Show when application starts", target: nil, action: nil)
 
     private init() {
         let window = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 380, height: 520),
@@ -189,11 +188,17 @@ final class TimerSettingsWindowController: NSWindowController, NSWindowDelegate,
         let buttons = NSStackView(views: [NSView(), cancel, start])
         buttons.spacing = 10
 
+        let note = NSTextField(wrappingLabelWithString:
+            "Starts from your general alerts in Preferences. Changes here apply "
+            + "to this timer only.")
+        note.font = .systemFont(ofSize: NSFont.smallSystemFontSize)
+        note.textColor = .secondaryLabelColor
+
         let stack = NSStackView(views: [
             pickerRow, countdownRows, pomodoroRows,
-            heading("When the timer reaches 00:00:00:"), alerts,
+            heading("When this timer reaches 00:00:00:"), alerts, note,
             heading("Announcement:"), announcement,
-            secondsBox, atLaunchBox, buttons,
+            buttons,
         ])
         stack.orientation = .vertical
         stack.alignment = .leading
@@ -202,9 +207,9 @@ final class TimerSettingsWindowController: NSWindowController, NSWindowDelegate,
         stack.setCustomSpacing(18, after: pickerRow)
         stack.setCustomSpacing(20, after: countdownRows)
         stack.setCustomSpacing(20, after: pomodoroRows)
-        stack.setCustomSpacing(14, after: alerts)
-        stack.setCustomSpacing(16, after: announcement)
-        stack.setCustomSpacing(16, after: atLaunchBox)
+        stack.setCustomSpacing(6, after: alerts)
+        stack.setCustomSpacing(14, after: note)
+        stack.setCustomSpacing(20, after: announcement)
 
         let content = NSView()
         content.addSubview(stack)
@@ -215,7 +220,8 @@ final class TimerSettingsWindowController: NSWindowController, NSWindowDelegate,
             stack.trailingAnchor.constraint(equalTo: content.trailingAnchor, constant: -pad),
             stack.bottomAnchor.constraint(equalTo: content.bottomAnchor, constant: -pad),
         ])
-        for row in [pickerRow, announcement, buttons, countdownRows!, pomodoroRows!] as [NSView] {
+        for row in [pickerRow, announcement, note, buttons,
+                    countdownRows!, pomodoroRows!] as [NSView] {
             NSLayoutConstraint.activate([
                 row.leadingAnchor.constraint(equalTo: content.leadingAnchor, constant: pad),
                 row.trailingAnchor.constraint(equalTo: content.trailingAnchor, constant: -pad),
@@ -272,15 +278,28 @@ final class TimerSettingsWindowController: NSWindowController, NSWindowDelegate,
         set(breakField, breakStep, Int(config.breakDuration / 60))
         set(roundsField, roundsStep, config.rounds)
 
-        blinkBox.state = prefs.alertBlink ? .on : .off
-        windowBox.state = prefs.alertWindow ? .on : .off
-        notifyBox.state = prefs.alertNotification ? .on : .off
-        notifySoundBox.state = prefs.alertNotificationSound ? .on : .off
-        speakBox.state = prefs.alertSpeak ? .on : .off
-        announcement.stringValue = prefs.announcement
-        secondsBox.state = prefs.displaySeconds ? .on : .off
-        atLaunchBox.state = prefs.showTimerWindowAtLaunch ? .on : .off
+        // Every visit starts from the general set, so the window always shows
+        // what a timer would do if you changed nothing -- and last time's
+        // one-off never leaks into this one.
+        let alerts = prefs.generalAlerts
+        blinkBox.state = alerts.blink ? .on : .off
+        windowBox.state = alerts.window ? .on : .off
+        notifyBox.state = alerts.notification ? .on : .off
+        notifySoundBox.state = alerts.notificationSound ? .on : .off
+        speakBox.state = alerts.speak ? .on : .off
+        announcement.stringValue = alerts.announcement
         notifySoundBox.isEnabled = notifyBox.state == .on
+    }
+
+    /// The alert set for the run being started: the boxes as they stand.
+    private func chosenAlerts() -> AlertSettings {
+        AlertSettings(blink: blinkBox.state == .on,
+                      window: windowBox.state == .on,
+                      notification: notifyBox.state == .on,
+                      notificationSound: notifySoundBox.state == .on,
+                      speak: speakBox.state == .on,
+                      announcement: announcement.stringValue.isEmpty
+                          ? "Done" : announcement.stringValue)
     }
 
     private func set(_ field: NSTextField, _ stepper: NSStepper, _ value: Int) {
@@ -288,18 +307,12 @@ final class TimerSettingsWindowController: NSWindowController, NSWindowDelegate,
         stepper.integerValue = value
     }
 
-    /// Alert choices are settings, so they stick even if the user cancels the run.
+    /// Lengths are remembered, so the next timer opens where the last one left
+    /// off. The alert boxes deliberately are not: they belong to the run, and
+    /// the general set in Preferences is what they reset to.
     private func saveSettings() {
         guard didLoad else { return }
         let prefs = Preferences.shared
-        prefs.alertBlink = blinkBox.state == .on
-        prefs.alertWindow = windowBox.state == .on
-        prefs.alertNotification = notifyBox.state == .on
-        prefs.alertNotificationSound = notifySoundBox.state == .on
-        prefs.alertSpeak = speakBox.state == .on
-        prefs.announcement = announcement.stringValue.isEmpty ? "Done" : announcement.stringValue
-        prefs.displaySeconds = secondsBox.state == .on
-        prefs.showTimerWindowAtLaunch = atLaunchBox.state == .on
 
         var config = prefs.timerConfig
         let seconds = hoursField.integerValue * 3600
@@ -369,8 +382,9 @@ final class TimerSettingsWindowController: NSWindowController, NSWindowDelegate,
         saveSettings()
         var config = Preferences.shared.timerConfig
         config.cycling = (mode == .pomodoro)
+        let alerts = chosenAlerts()
         close()
-        onStart?(config)
+        onStart?(config, alerts)
     }
 
     @objc private func cancelPressed() {

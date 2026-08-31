@@ -33,10 +33,8 @@ fork — no original source was copied — but it owes the whole concept to Thym
 pause and open the menu. Finish saves the elapsed time to your session history
 and resets the clock.
 
-**Countdown.** Set hours, minutes and seconds, and choose what happens at zero:
-blink in the menu bar, an alert window, a Mac notification, or a spoken
-announcement of a phrase you write. Press Return in any of the boxes to start
-straight away. The menu bar counts down in full — `45:00`, `2:15:00` — and if you
+**Countdown.** Set hours, minutes and seconds, and press Return in any of the
+boxes to start straight away. The menu bar counts down in full — `45:00`, `2:15:00` — and if you
 would rather not watch the seconds, turn them off and it shows `45m` and `2:15`
 instead.
 
@@ -45,6 +43,13 @@ alternates automatically until the rounds are done. While it runs, the menu bar
 shows a rule **under** the time during work and **over** it during a break, so
 you can tell which phase you're in at a glance. Work blocks are recorded in your
 history; breaks are not.
+
+**Alerts, general and one-off.** What happens when a timer reaches zero — blink
+in the menu bar, an alert window, a Mac notification, a spoken phrase — is set
+once in Preferences and applies to every timer. The timer window opens showing
+those same settings, so you can always see what a timer is about to do, and
+anything you change there applies to that one timer only. The next timer starts
+from your general settings again.
 
 **Session history.** The last sessions are listed in the menu with a stopwatch
 or hourglass marker showing which timer produced each one, a running total, and

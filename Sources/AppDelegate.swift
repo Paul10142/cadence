@@ -26,6 +26,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private var didFinishLaunching = false
     /// Expanded session list in the menu.
     private var showAllSessions = false
+    /// What the run now in progress does at zero. Normally the general set from
+    /// Preferences; a timer started from the settings window can override it for
+    /// that run alone.
+    private var activeAlerts = AlertSettings()
 
     private var blinkTimer: Timer?
     private var blinkOn = true
@@ -60,8 +64,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         countdown.onPhaseComplete = { [weak self] phase, length, runIsOver in
             self?.phaseCompleted(phase, length: length, runIsOver: runIsOver)
         }
-        TimerSettingsWindowController.shared.onStart = { [weak self] config in
-            self?.countdown.start(config: config)
+        TimerSettingsWindowController.shared.onStart = { [weak self] config, alerts in
+            self?.startCountdown(config, alerts: alerts)
         }
         refreshStatusItem()
 
@@ -342,6 +346,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     @objc private func startGeneralTimer() { TimerSettingsWindowController.shared.show(mode: .general) }
     @objc private func startPomodoroTimer() { TimerSettingsWindowController.shared.show(mode: .pomodoro) }
 
+    /// The one way a run begins. Anything that does not name an alert set gets
+    /// the general one, read fresh so a change in Preferences takes effect on
+    /// the very next timer.
+    private func startCountdown(_ config: CountdownTimer.Config,
+                                alerts: AlertSettings? = nil) {
+        activeAlerts = alerts ?? Preferences.shared.generalAlerts
+        countdown.start(config: config)
+    }
+
     /// Clicking the icon runs the countdown the same way it runs the stopwatch:
     /// start, then pause and show the menu, then resume.
     private func clickCountdown(pomodoro: Bool) {
@@ -354,7 +367,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         case .idle, .finished:
             var config = Preferences.shared.timerConfig
             config.cycling = pomodoro
-            countdown.start(config: config)
+            startCountdown(config)
         }
     }
 
@@ -367,7 +380,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         }
         var config = Preferences.shared.timerConfig
         config.cycling = pomodoro
-        countdown.start(config: config)
+        startCountdown(config)
     }
     @objc private func pauseTimer() { countdown.pause() }
     @objc private func resumeTimer() { countdown.resume() }
@@ -407,24 +420,24 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     // MARK: Alerts
 
     private func fireAlerts(message: String, runIsOver: Bool) {
-        let prefs = Preferences.shared
+        let alerts = activeAlerts
 
-        if prefs.alertBlink, runIsOver { startBlinking() }
+        if alerts.blink, runIsOver { startBlinking() }
 
-        if prefs.alertNotification { postNotification(message) }
+        if alerts.notification { postNotification(message) }
 
-        if prefs.alertSpeak {
-            let spoken = runIsOver ? prefs.announcement : message
+        if alerts.speak {
+            let spoken = runIsOver ? alerts.announcement : message
             speech.speak(AVSpeechUtterance(string: spoken))
         }
 
-        if prefs.alertWindow {
+        if alerts.window {
             // Deferred so the alert never runs inside the countdown's tick.
             DispatchQueue.main.async { [weak self] in
                 guard let self else { return }
                 let alert = NSAlert()
                 alert.messageText = message
-                alert.informativeText = runIsOver ? Preferences.shared.announcement : ""
+                alert.informativeText = runIsOver ? self.activeAlerts.announcement : ""
                 alert.alertStyle = .informational
                 alert.addButton(withTitle: "OK")
                 NSApp.activate(ignoringOtherApps: true)
@@ -447,7 +460,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         let content = UNMutableNotificationContent()
         content.title = "Cadence"
         content.body = message
-        if Preferences.shared.alertNotificationSound { content.sound = .default }
+        if activeAlerts.notificationSound { content.sound = .default }
         let request = UNNotificationRequest(identifier: UUID().uuidString,
                                             content: content, trigger: nil)
         UNUserNotificationCenter.current().add(request)
