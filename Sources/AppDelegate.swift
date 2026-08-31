@@ -90,27 +90,55 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
     // MARK: Status item
 
+    /// Everything the status item can be showing. Compared before drawing, so
+    /// an unchanged display is left alone.
+    private enum StatusDisplay: Equatable {
+        case icon
+        case text(String, dimmed: Bool)
+        case phase(String, barOnTop: Bool)
+    }
+
+    /// What the button is showing now, so a tick that changes nothing does not
+    /// touch it.
+    private var shownDisplay: StatusDisplay?
+
     /// The countdown owns the display whenever it is armed; otherwise the
     /// stopwatch does; otherwise the icon.
+    ///
+    /// Both timers tick four times a second, but the time on show changes at
+    /// most once a second -- and once a minute when seconds are turned off.
+    /// Writing the button's title or image resizes the status item, and doing
+    /// that underneath a click can swallow the click, so a tick that would draw
+    /// the same thing again returns without touching the button.
     private func refreshStatusItem() {
         guard let button = statusItem.button else { return }
 
+        let wanted: StatusDisplay
         if countdown.isActive {
             // A pomodoro shows its phase at a glance: a bar underneath while
             // working, a bar on top during a break.
-            if countdown.config.cycling, countdown.state != .finished {
-                button.attributedTitle = NSAttributedString(string: "")
-                button.image = PhaseIndicator.image(countdownText(), barOnTop: countdown.phase == .rest)
-            } else {
-                button.image = nil
-                button.attributedTitle = title(countdownText(), dimmed: !blinkOn)
-            }
+            wanted = countdown.config.cycling && countdown.state != .finished
+                ? .phase(countdownText(), barOnTop: countdown.phase == .rest)
+                : .text(countdownText(), dimmed: !blinkOn)
         } else if timer.state != .idle {
-            button.image = nil
-            button.attributedTitle = title(TimeFormat.clock(timer.elapsedSeconds))
+            wanted = .text(TimeFormat.clock(timer.elapsedSeconds), dimmed: false)
         } else {
+            wanted = .icon
+        }
+
+        guard wanted != shownDisplay else { return }
+        shownDisplay = wanted
+
+        switch wanted {
+        case .icon:
             button.image = stopwatchImage
             button.attributedTitle = NSAttributedString(string: "")
+        case let .text(text, dimmed):
+            button.image = nil
+            button.attributedTitle = title(text, dimmed: dimmed)
+        case let .phase(text, barOnTop):
+            button.attributedTitle = NSAttributedString(string: "")
+            button.image = PhaseIndicator.image(text, barOnTop: barOnTop)
         }
     }
 
