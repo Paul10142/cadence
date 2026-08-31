@@ -46,6 +46,7 @@ final class TimerSettingsWindowController: NSWindowController, NSWindowDelegate,
     private let notifySoundBox = NSButton(checkboxWithTitle: "With sound", target: nil, action: nil)
     private let speakBox = NSButton(checkboxWithTitle: "Speak announcement", target: nil, action: nil)
     private let announcement = NSTextField()
+    private let announcementHeading = NSTextField(labelWithString: "Announcement:")
 
     private init() {
         let window = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 380, height: 520),
@@ -139,6 +140,7 @@ final class TimerSettingsWindowController: NSWindowController, NSWindowDelegate,
             f.font = .boldSystemFont(ofSize: NSFont.systemFontSize)
             return f
         }
+        announcementHeading.font = .boldSystemFont(ofSize: NSFont.systemFontSize)
 
         modePicker.target = self
         modePicker.action = #selector(modeChanged)
@@ -175,6 +177,8 @@ final class TimerSettingsWindowController: NSWindowController, NSWindowDelegate,
 
         notifyBox.target = self
         notifyBox.action = #selector(notificationToggled)
+        speakBox.target = self
+        speakBox.action = #selector(speakToggled)
 
         let indentedSound = NSStackView(views: [notifySoundBox])
         indentedSound.edgeInsets = NSEdgeInsets(top: 0, left: 18, bottom: 0, right: 0)
@@ -201,7 +205,7 @@ final class TimerSettingsWindowController: NSWindowController, NSWindowDelegate,
         let stack = NSStackView(views: [
             pickerRow, countdownRows, pomodoroRows,
             heading("When this timer reaches 00:00:00:"), alerts, note,
-            heading("Announcement:"), announcement,
+            announcementHeading, announcement,
             buttons,
         ])
         stack.orientation = .vertical
@@ -299,6 +303,7 @@ final class TimerSettingsWindowController: NSWindowController, NSWindowDelegate,
         speakBox.state = alerts.speak ? .on : .off
         announcement.stringValue = alerts.announcement
         notifySoundBox.isEnabled = notifyBox.state == .on
+        speakToggled()
     }
 
     /// The alert set for the run being started: the boxes as they stand.
@@ -351,6 +356,14 @@ final class TimerSettingsWindowController: NSWindowController, NSWindowDelegate,
     }
 
     @objc private func notificationToggled() { notifySoundBox.isEnabled = notifyBox.state == .on }
+
+    /// Nothing is spoken unless the box is ticked, so the phrase is dimmed
+    /// until it would actually be used.
+    @objc private func speakToggled() {
+        let on = speakBox.state == .on
+        announcement.isEnabled = on
+        announcementHeading.isEnabled = on
+    }
 
     @objc private func stepperChanged(_ sender: NSStepper) {
         switch sender {
