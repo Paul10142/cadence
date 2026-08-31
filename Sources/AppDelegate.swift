@@ -72,6 +72,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         observeSystemEvents()
         requestNotificationPermission()
 
+        // Deferred so the menu bar icon is already in place behind the prompt.
+        DispatchQueue.main.async { LoginItem.offerOnFirstLaunch() }
+
         if Preferences.shared.showTimerWindowAtLaunch {
             let mode = TimerSettingsWindowController.Mode(
                 rawValue: Preferences.shared.lastTimerMode) ?? .general
@@ -118,10 +121,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
     private func countdownText() -> String {
         let seconds = countdown.remainingSeconds
-        guard !Preferences.shared.displaySeconds else { return TimeFormat.clock(seconds) }
-        // Minute resolution, labelled so it can't be misread as seconds.
-        let minutes = Int((Double(seconds) / 60).rounded(.up))
-        return minutes < 1 ? "<1m" : "\(minutes)m"
+        return Preferences.shared.displaySeconds
+            ? TimeFormat.clock(seconds)
+            : TimeFormat.minuteClock(seconds)
     }
 
     // MARK: Clicking the status item

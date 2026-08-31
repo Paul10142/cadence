@@ -4,7 +4,7 @@ import Carbon.HIToolbox
 /// Countdown and pomodoro settings. Both modes share one layout language --
 /// a right-aligned label, a value box, a stepper and a unit -- so switching
 /// between them changes only the rows, never the shape of the window.
-final class TimerSettingsWindowController: NSWindowController, NSWindowDelegate {
+final class TimerSettingsWindowController: NSWindowController, NSWindowDelegate, NSTextFieldDelegate {
     static let shared = TimerSettingsWindowController()
 
     enum Mode: Int { case general = 0, pomodoro = 1 }
@@ -17,6 +17,10 @@ final class TimerSettingsWindowController: NSWindowController, NSWindowDelegate 
     private var contentWidth: CGFloat = 380
 
     private var mode: Mode = .general
+    /// Set once the controls have been filled from the saved settings. Saving
+    /// before that would write the blank state of freshly built checkboxes over
+    /// everything the user had.
+    private var didLoad = false
 
     private let modePicker = NSSegmentedControl(labels: ["Countdown", "Pomodoro"],
                                                 trackingMode: .selectOne, target: nil, action: nil)
@@ -71,6 +75,9 @@ final class TimerSettingsWindowController: NSWindowController, NSWindowDelegate 
         field.font = .monospacedDigitSystemFont(ofSize: NSFont.systemFontSize, weight: .regular)
         field.target = self
         field.action = #selector(fieldChanged(_:))
+        // A field with an action of its own swallows Return, so the Start
+        // button never sees it. The delegate hands it back.
+        field.delegate = self
 
         stepper.minValue = Double(range.lowerBound)
         stepper.maxValue = Double(range.upperBound)
@@ -253,6 +260,7 @@ final class TimerSettingsWindowController: NSWindowController, NSWindowDelegate 
     // MARK: Loading and saving
 
     private func load() {
+        defer { didLoad = true }
         let prefs = Preferences.shared
         let config = prefs.timerConfig
 
@@ -282,6 +290,7 @@ final class TimerSettingsWindowController: NSWindowController, NSWindowDelegate 
 
     /// Alert choices are settings, so they stick even if the user cancels the run.
     private func saveSettings() {
+        guard didLoad else { return }
         let prefs = Preferences.shared
         prefs.alertBlink = blinkBox.state == .on
         prefs.alertWindow = windowBox.state == .on
@@ -340,6 +349,19 @@ final class TimerSettingsWindowController: NSWindowController, NSWindowDelegate 
         case breakField:   breakStep.integerValue = sender.integerValue
         default:           roundsStep.integerValue = sender.integerValue
         }
+    }
+
+    /// Return in any of the value boxes starts the timer, the same as the
+    /// Start button, so setting a length and running it is one gesture.
+    func control(_ control: NSControl, textView: NSTextView,
+                 doCommandBy commandSelector: Selector) -> Bool {
+        guard commandSelector == #selector(NSResponder.insertNewline(_:)),
+              let field = control as? NSTextField else { return false }
+        fieldChanged(field)   // keep the stepper in step with what was typed
+        // Deferred: starting closes the window, and the field editor is still
+        // part-way through handling this keystroke.
+        DispatchQueue.main.async { [weak self] in self?.startPressed() }
+        return true
     }
 
     @objc private func startPressed() {
