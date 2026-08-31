@@ -107,6 +107,27 @@ final class Preferences {
     var alertNotification: Bool { get { flag(.alertNotification) } set { setFlag(newValue, .alertNotification) } }
     var alertNotificationSound: Bool { get { flag(.alertNotificationSound) } set { setFlag(newValue, .alertNotificationSound) } }
     var alertSpeak: Bool { get { flag(.alertSpeak) } set { setFlag(newValue, .alertSpeak) } }
+
+    /// The general alert set: what a timer does at zero unless the timer window
+    /// was told otherwise for that one run.
+    var generalAlerts: AlertSettings {
+        get {
+            AlertSettings(blink: alertBlink,
+                          window: alertWindow,
+                          notification: alertNotification,
+                          notificationSound: alertNotificationSound,
+                          speak: alertSpeak,
+                          announcement: announcement)
+        }
+        set {
+            alertBlink = newValue.blink
+            alertWindow = newValue.window
+            alertNotification = newValue.notification
+            alertNotificationSound = newValue.notificationSound
+            alertSpeak = newValue.speak
+            announcement = newValue.announcement
+        }
+    }
     /// The menu bar counts down in seconds unless this is turned off. Stored
     /// as "hide" so the seconds-on default holds for everyone, including anyone
     /// carrying the older, minute-only setting.
@@ -219,11 +240,22 @@ final class ShortcutRecorderButton: NSButton {
 
 // MARK: - Preferences window
 
-final class PreferencesWindowController: NSWindowController {
+final class PreferencesWindowController: NSWindowController, NSWindowDelegate {
     static let shared = PreferencesWindowController()
 
     private let loginBox = NSButton(checkboxWithTitle: "Open Cadence at login",
                                     target: nil, action: nil)
+    private let secondsBox = NSButton(checkboxWithTitle: "Show seconds in the menu bar",
+                                      target: nil, action: nil)
+    private let atLaunchBox = NSButton(checkboxWithTitle: "Open the timer window at launch",
+                                       target: nil, action: nil)
+
+    private let blinkBox = NSButton(checkboxWithTitle: "Blink in menu bar", target: nil, action: nil)
+    private let windowBox = NSButton(checkboxWithTitle: "Show alert window", target: nil, action: nil)
+    private let notifyBox = NSButton(checkboxWithTitle: "Show notification", target: nil, action: nil)
+    private let notifySoundBox = NSButton(checkboxWithTitle: "With sound", target: nil, action: nil)
+    private let speakBox = NSButton(checkboxWithTitle: "Speak announcement", target: nil, action: nil)
+    private let announcementField = NSTextField()
 
     private init() {
         let window = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 580, height: 330),
@@ -233,6 +265,7 @@ final class PreferencesWindowController: NSWindowController {
         window.isReleasedWhenClosed = false
         window.center()
         super.init(window: window)
+        window.delegate = self
         buildContent()
     }
 
@@ -303,28 +336,136 @@ final class PreferencesWindowController: NSWindowController {
         loginBox.state = LoginItem.isEnabled ? .on : .off
         loginBox.isEnabled = LoginItem.isAvailable
 
-        let checks = NSStackView(views: [clickRow, loginBox, resumeBox, sleepBox,
-                                         screensaverBox, confirmBox])
+        secondsBox.target = self
+        secondsBox.action = #selector(toggleDisplaySeconds(_:))
+        secondsBox.state = Preferences.shared.displaySeconds ? .on : .off
+
+        atLaunchBox.target = self
+        atLaunchBox.action = #selector(toggleShowAtLaunch(_:))
+        atLaunchBox.state = Preferences.shared.showTimerWindowAtLaunch ? .on : .off
+
+        let checks = NSStackView(views: [clickRow, loginBox, secondsBox, atLaunchBox,
+                                         resumeBox, sleepBox, screensaverBox, confirmBox])
         checks.orientation = .vertical
         checks.alignment = .leading
         checks.spacing = 8
         checks.translatesAutoresizingMaskIntoConstraints = false
 
+        let alerts = buildAlertsSection()
+        alerts.translatesAutoresizingMaskIntoConstraints = false
+
         content.addSubview(grid)
         content.addSubview(checks)
+        content.addSubview(alerts)
 
         NSLayoutConstraint.activate([
             grid.topAnchor.constraint(equalTo: content.topAnchor, constant: 24),
             grid.centerXAnchor.constraint(equalTo: content.centerXAnchor),
             checks.topAnchor.constraint(equalTo: grid.bottomAnchor, constant: 22),
             checks.leadingAnchor.constraint(equalTo: grid.leadingAnchor),
-            checks.bottomAnchor.constraint(equalTo: content.bottomAnchor, constant: -24),
+            alerts.topAnchor.constraint(equalTo: checks.bottomAnchor, constant: 22),
+            alerts.leadingAnchor.constraint(equalTo: grid.leadingAnchor),
+            alerts.trailingAnchor.constraint(lessThanOrEqualTo: content.trailingAnchor, constant: -24),
+            alerts.bottomAnchor.constraint(equalTo: content.bottomAnchor, constant: -24),
             grid.trailingAnchor.constraint(lessThanOrEqualTo: content.trailingAnchor, constant: -24),
         ])
 
         window.contentView = content
         // Size to the content so nothing is clipped as rows are added.
         window.setContentSize(content.fittingSize)
+    }
+
+    /// The general alert set: what every timer does at zero, unless the timer
+    /// window is told otherwise for one run.
+    private func buildAlertsSection() -> NSView {
+        let heading = NSTextField(labelWithString: "When a timer reaches zero:")
+        heading.font = .boldSystemFont(ofSize: NSFont.systemFontSize)
+
+        let note = NSTextField(wrappingLabelWithString:
+            "These are the general settings. Starting a timer from the timer "
+            + "window shows them, and anything you change there applies to that "
+            + "timer only.")
+        note.font = .systemFont(ofSize: NSFont.smallSystemFontSize)
+        note.textColor = .secondaryLabelColor
+        note.preferredMaxLayoutWidth = 400
+
+        let alerts = Preferences.shared.generalAlerts
+        let boxes: [(NSButton, Bool)] = [
+            (blinkBox, alerts.blink),
+            (windowBox, alerts.window),
+            (notifyBox, alerts.notification),
+            (notifySoundBox, alerts.notificationSound),
+            (speakBox, alerts.speak),
+        ]
+        for (box, on) in boxes {
+            box.target = self
+            box.action = #selector(alertsChanged(_:))
+            box.state = on ? .on : .off
+        }
+        notifySoundBox.isEnabled = alerts.notification
+
+        let indentedSound = NSStackView(views: [notifySoundBox])
+        indentedSound.edgeInsets = NSEdgeInsets(top: 0, left: 18, bottom: 0, right: 0)
+
+        announcementField.stringValue = alerts.announcement
+        announcementField.placeholderString = "Done"
+        announcementField.target = self
+        announcementField.action = #selector(alertsChanged(_:))
+        announcementField.widthAnchor.constraint(equalToConstant: 260).isActive = true
+        let announcementRow = NSStackView(views: [
+            NSTextField(labelWithString: "Announcement:"), announcementField,
+        ])
+        announcementRow.spacing = 8
+        announcementRow.alignment = .centerY
+
+        let stack = NSStackView(views: [heading, note, blinkBox, windowBox, notifyBox,
+                                        indentedSound, speakBox, announcementRow])
+        stack.orientation = .vertical
+        stack.alignment = .leading
+        stack.spacing = 6
+        stack.setCustomSpacing(10, after: note)
+        stack.setCustomSpacing(12, after: speakBox)
+        return stack
+    }
+
+    /// Fills the alert controls from the saved general set.
+    private func showGeneralAlerts() {
+        let alerts = Preferences.shared.generalAlerts
+        blinkBox.state = alerts.blink ? .on : .off
+        windowBox.state = alerts.window ? .on : .off
+        notifyBox.state = alerts.notification ? .on : .off
+        notifySoundBox.state = alerts.notificationSound ? .on : .off
+        speakBox.state = alerts.speak ? .on : .off
+        announcementField.stringValue = alerts.announcement
+        notifySoundBox.isEnabled = alerts.notification
+    }
+
+    /// Any alert control writes the whole set back, so the window and the saved
+    /// settings can never disagree.
+    @objc private func alertsChanged(_ sender: NSControl) {
+        notifySoundBox.isEnabled = notifyBox.state == .on
+        Preferences.shared.generalAlerts = AlertSettings(
+            blink: blinkBox.state == .on,
+            window: windowBox.state == .on,
+            notification: notifyBox.state == .on,
+            notificationSound: notifySoundBox.state == .on,
+            speak: speakBox.state == .on,
+            announcement: announcementField.stringValue.isEmpty
+                ? "Done" : announcementField.stringValue)
+    }
+
+    /// Catches an announcement still being typed when the window is dismissed.
+    func windowWillClose(_ notification: Notification) {
+        window?.makeFirstResponder(nil)
+        alertsChanged(announcementField)
+    }
+
+    @objc private func toggleDisplaySeconds(_ sender: NSButton) {
+        Preferences.shared.displaySeconds = (sender.state == .on)
+    }
+
+    @objc private func toggleShowAtLaunch(_ sender: NSButton) {
+        Preferences.shared.showTimerWindowAtLaunch = (sender.state == .on)
     }
 
     @objc private func toggleOpenAtLogin(_ sender: NSButton) {
@@ -356,8 +497,11 @@ final class PreferencesWindowController: NSWindowController {
     }
 
     func show() {
-        // The user may have changed this in System Settings since last time.
+        // The user may have changed these elsewhere since last time.
         loginBox.state = LoginItem.isEnabled ? .on : .off
+        secondsBox.state = Preferences.shared.displaySeconds ? .on : .off
+        atLaunchBox.state = Preferences.shared.showTimerWindowAtLaunch ? .on : .off
+        showGeneralAlerts()
         NSApp.activate(ignoringOtherApps: true)
         window?.makeKeyAndOrderFront(nil)
     }
