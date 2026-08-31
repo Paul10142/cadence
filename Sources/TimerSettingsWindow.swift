@@ -29,6 +29,12 @@ final class TimerSettingsWindowController: NSWindowController, NSWindowDelegate,
     private let hoursField = NSTextField(), minutesField = NSTextField(), secondsField = NSTextField()
     private let hoursStep = NSStepper(), minutesStep = NSStepper(), secondsStep = NSStepper()
     private var countdownRows: NSStackView!
+    /// Explains that the alert boxes below are this run's, not the general set.
+    /// Broken by hand into two lines that fit the window as it already is,
+    /// rather than left to wrap and drag the whole layout wider.
+    private let note = NSTextField(wrappingLabelWithString:
+        "Starts from the general alerts in Preferences.\n"
+        + "Changes here apply to this timer only.")
 
     private let workField = NSTextField(), breakField = NSTextField(), roundsField = NSTextField()
     private let workStep = NSStepper(), breakStep = NSStepper(), roundsStep = NSStepper()
@@ -62,6 +68,7 @@ final class TimerSettingsWindowController: NSWindowController, NSWindowDelegate,
     /// window rather than wherever the surrounding text happens to push it.
     private static let flankWidth: CGFloat = 74
     private static let boxWidth: CGFloat = 60
+    private static let contentPadding: CGFloat = 20
 
     private func row(_ caption: String, _ field: NSTextField, _ stepper: NSStepper,
                      _ suffix: String, range: ClosedRange<Int>) -> NSView {
@@ -188,9 +195,6 @@ final class TimerSettingsWindowController: NSWindowController, NSWindowDelegate,
         let buttons = NSStackView(views: [NSView(), cancel, start])
         buttons.spacing = 10
 
-        let note = NSTextField(wrappingLabelWithString:
-            "Starts from your general alerts in Preferences. Changes here apply "
-            + "to this timer only.")
         note.font = .systemFont(ofSize: NSFont.smallSystemFontSize)
         note.textColor = .secondaryLabelColor
 
@@ -209,18 +213,18 @@ final class TimerSettingsWindowController: NSWindowController, NSWindowDelegate,
         stack.setCustomSpacing(20, after: pomodoroRows)
         stack.setCustomSpacing(6, after: alerts)
         stack.setCustomSpacing(14, after: note)
-        stack.setCustomSpacing(20, after: announcement)
+        stack.setCustomSpacing(16, after: announcement)
 
         let content = NSView()
         content.addSubview(stack)
-        let pad: CGFloat = 20
+        let pad = Self.contentPadding
         NSLayoutConstraint.activate([
             stack.topAnchor.constraint(equalTo: content.topAnchor, constant: pad),
             stack.leadingAnchor.constraint(equalTo: content.leadingAnchor, constant: pad),
             stack.trailingAnchor.constraint(equalTo: content.trailingAnchor, constant: -pad),
             stack.bottomAnchor.constraint(equalTo: content.bottomAnchor, constant: -pad),
         ])
-        for row in [pickerRow, announcement, note, buttons,
+        for row in [pickerRow, announcement, buttons,
                     countdownRows!, pomodoroRows!] as [NSView] {
             NSLayoutConstraint.activate([
                 row.leadingAnchor.constraint(equalTo: content.leadingAnchor, constant: pad),
@@ -239,7 +243,13 @@ final class TimerSettingsWindowController: NSWindowController, NSWindowDelegate,
             }
         }
         window.contentView = content
+        // The note explains the section; it should never be what decides how
+        // wide the window is. Measured with it out of the way, then wrapped to
+        // whatever width the rest of the layout settled on.
+        note.isHidden = true
         contentWidth = measureWidestMode(in: content)
+        note.isHidden = false
+        note.preferredMaxLayoutWidth = contentWidth - 2 * Self.contentPadding
         applyMode()
         resizeToFit()
     }
