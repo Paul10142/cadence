@@ -4,7 +4,14 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 
 APP_NAME="Cadence"
-BUNDLE_ID="com.paulclancy.Cadence"
+# Not "com.paulclancy.Cadence": macOS's menu bar refuses that identifier on the
+# development machine. Control Center accepts the status item, then logs
+# "Moving host to blocked list" and drops it, so the app runs with no icon.
+# The block is keyed to the bundle identifier alone -- the same binary under
+# any other identifier is placed normally -- and survives a reboot, a Control
+# Center restart and a full reset of its preferences. Settings carry over in
+# Migration.swift.
+BUNDLE_ID="com.paulclancy.CadenceTimer"
 VERSION="1.1.0"
 APP="build/${APP_NAME}.app"
 
